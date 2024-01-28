@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:friendly_mobile_app/screens/nearby_posts_feed.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:friendly_mobile_app/screens/test.dart';
 import 'dart:async';
@@ -7,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'add_post_screen.dart';
+import 'feed.dart';
 
 class Post {
   final int id;
@@ -34,13 +34,13 @@ class Post {
   });
 }
 
-class Feed extends StatefulWidget {
-  const Feed({Key? key}) : super(key: key);
+class NearbyPostsFeed extends StatefulWidget {
+  const NearbyPostsFeed({Key? key}) : super(key: key);
   @override
-  _FeedState createState() => _FeedState();
+  _NearbyPostsFeed createState() => _NearbyPostsFeed();
 }
 
-class _FeedState extends State<Feed> {
+class _NearbyPostsFeed extends State<NearbyPostsFeed> {
 
   bool hasMore = true;
   bool test = false;
@@ -175,9 +175,9 @@ Future<void> fetch() async {
               icon: Icon(Icons.location_on),
               onPressed: () {
                    Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NearbyPostsFeed()),
-                  );
+                  context,
+                  MaterialPageRoute(builder: (context) => NearbyPostsFeed()),
+                );
               },
             ),
             Text('Nearby'),

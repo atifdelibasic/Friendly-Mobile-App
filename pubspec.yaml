@@ -48,6 +48,8 @@ dependencies:
   avoid_keyboard: ^0.3.0
   image_picker: ^1.0.7
   fluttertoast: ^8.0.2
+  geolocator: ^10.1.0
+  permission_handler: ^11.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

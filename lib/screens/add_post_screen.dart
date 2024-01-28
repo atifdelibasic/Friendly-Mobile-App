@@ -8,6 +8,8 @@ import 'package:friendly_mobile_app/screens/feed.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
+
 
 class AddPostScreen extends StatefulWidget {
   @override
@@ -19,6 +21,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
   String imageUrl = '';
   int? selectedCategoryId; // Track selected hobby category
   int? selectedHobbyId; // Track selected hobby
+  double? latitude;
+  double? longitude;
+  bool isLocationLoading = false;
 
   List<HobbyCategory> hobbyCategories = []; // List to store hobby categories
   List<Hobby> hobbies = []; // List to store hobbies based on the selected category
@@ -104,6 +109,47 @@ class _AddPostScreenState extends State<AddPostScreen> {
     }
   }
 
+  Future<void> _getLocation() async {
+     setState(() {
+      isLocationLoading = true;
+    });
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
+    
+    try {
+     
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+        isLocationLoading = false;
+      });
+
+      Fluttertoast.showToast(
+        msg: 'Location set successfully!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+    } catch (e) {
+       setState(() {
+          isLocationLoading = false;
+        });
+      print('Error getting location: $e');
+    }
+  }
+
+  void _clearLocation() {
+    setState(() {
+      latitude = null;
+      longitude = null;
+    });
+  }
+
   Future<void> _createPost() async {
     try {
       final response = await http.post(
@@ -116,6 +162,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
           'description': descriptionController.text,
           'imagePath': imageUrl,
           'hobbyId': selectedHobbyId,
+          'longitude': longitude,
+          'latitude': latitude,
         }),
       );
 
@@ -152,6 +200,7 @@ Widget build(BuildContext context) {
   bool isButtonEnabled = selectedHobbyId != null && descriptionController.text.isNotEmpty;
 
   return Scaffold(
+    resizeToAvoidBottomInset: false,
     appBar: AppBar(
       title: Text('Add Post'),
     ),
@@ -231,17 +280,51 @@ Widget build(BuildContext context) {
               errorText: descriptionController.text.isEmpty ? 'Description is required' : null,
             ),
           ),
-          SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: isButtonEnabled
-                ? () {
-                    _createPost();
-                  }
-                : null,
-            // Disable the button if hobby or description is missing
-            child: Text('Post'),
-          ),
-        ],
+           SizedBox(height: 16.0),
+            isLocationLoading
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 8.0),
+                      Text('Fetching Location...'),
+                    ],
+                  )
+                : latitude != null && longitude != null
+                    ? Column(
+                        children: [
+                          Text(
+                            'Location set: Latitude: $latitude, Longitude: $longitude',
+                            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8.0),
+                          ElevatedButton(
+                            onPressed: _clearLocation,
+                            child: Text('Clear Location'),
+                          ),
+                          SizedBox(height: 8.0),
+                          Text(
+                            'Posts will be available to users with similar interests nearby.',
+                            style: TextStyle(fontSize: 14.0, color: Colors.grey),
+                          ),
+                        ],
+                      )
+                    : ElevatedButton(
+                        onPressed: () async {
+                          await _getLocation();
+                        },
+                        child: Text('Set Location'),
+                      ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: isButtonEnabled
+                  ? () {
+                      _createPost();
+                    }
+                  : null,
+              child: Text('Post'),
+            ),
+          ],
       ),
     ),
   );

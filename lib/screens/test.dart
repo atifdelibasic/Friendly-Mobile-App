@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/domain/like.dart';
+import 'package:friendly_mobile_app/screens/edit_post_screen.dart';
 import 'package:friendly_mobile_app/screens/userProfile.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,6 +19,7 @@ class PostCard extends StatefulWidget {
   final int comments;
   bool isLikedByUser;
   final String dateCreated;
+  final String hobbyName;
 
   PostCard({
     required this.id,
@@ -28,7 +30,8 @@ class PostCard extends StatefulWidget {
     required this.likes,
     required this.comments,
     required this.isLikedByUser,
-    required this.dateCreated
+    required this.dateCreated,
+    required this.hobbyName
   });
 
   @override
@@ -37,13 +40,12 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool _isExpanded = true;
-
-  @override
+@override
   Widget build(BuildContext context) {
-     Color likeIconColor = widget.isLikedByUser ? Colors.blue : Colors.grey;
+    Color likeIconColor = widget.isLikedByUser ? Colors.blue : Colors.grey;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
-      // padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(0.0),
@@ -58,168 +60,199 @@ class _PostCardState extends State<PostCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-       GestureDetector(
-      onTap: () {
-        // Navigate to the user profile page
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserProfilePage(userId: 1),
-          ),
-        );
-      },
-      child: Padding( 
-        padding: const EdgeInsets.all(8.0),
-  child: Row(
-    children: [
-      if (widget.profileImage.isNotEmpty)
-        CircleAvatar(
-          radius: 20.0,
-          backgroundImage: NetworkImage(widget.profileImage),
-        ),
-      SizedBox(width: 8.0),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.username,
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
+          GestureDetector(
+            onTap: () {
+              // Navigate to the user profile page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfilePage(userId: 1),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  if (widget.profileImage.isNotEmpty)
+                    CircleAvatar(
+                      radius: 20.0,
+                      backgroundImage: NetworkImage(widget.profileImage),
+                    ),
+                  SizedBox(width: 8.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.username,
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.0),
+                      Text(
+                        calculateTimeAgo(widget.dateCreated),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            // Handle edit post
+                           Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPostScreen(
+                                description: widget.description,
+                                postId: widget.id,
+                                imagePath: widget.postImage,
+                              ),
+                            ),
+                          );
+                          } else if (value == 'delete') {
+                            // Handle delete post
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Edit'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 4.0),
-          Text(
-            calculateTimeAgo(widget.dateCreated),
-
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12.0,
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-),
-       ),
           SizedBox(height: 16.0),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              widget.hobbyName,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           GestureDetector(
             onTap: () {
               setState(() {
                 _isExpanded = !_isExpanded;
               });
             },
-            child: 
-            Padding(
+            child: Padding(
               padding: EdgeInsets.all(8.0),
-              child:
-            Text(
-              widget.description,
-              style: TextStyle(
-                fontSize: 14.0,
-                height: 1.5,
-                color: Colors.black,
+              child: Text(
+                widget.description,
+                style: TextStyle(
+                  fontSize: 14.0,
+                  height: 1.5,
+                  color: Colors.black,
+                ),
+                maxLines: _isExpanded ? null : 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: _isExpanded ? null : 3,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          ),
           SizedBox(height: 16.0),
-        Container(
-          height: (widget.postImage != null && widget.postImage.isNotEmpty) ? 400.0 : 0.0,
-          child: (widget.postImage != null && widget.postImage.isNotEmpty)
-            ? Container(
-                width: double.infinity, // Set the width to be full
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(0.0),
-                  image: DecorationImage(
-                    image: NetworkImage(widget.postImage),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
-            : null,
-        ),
+          Container(
+            height: (widget.postImage != null && widget.postImage.isNotEmpty)
+                ? 400.0
+                : 0.0,
+            child: (widget.postImage != null && widget.postImage.isNotEmpty)
+                ? Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(0.0),
+                      image: DecorationImage(
+                        image: NetworkImage(widget.postImage),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
           SizedBox(height: 16.0),
           Padding(
-            padding: EdgeInsets.fromLTRB(10,0,0,10),
-            child:
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                   setState(() {
-                     try {
-                      final response =  http.post(
-                        Uri.parse('https://localhost:7169/Like'),
-                        headers: {
-                          'Content-Type': 'application/json; charset=UTF-8',
-                          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTMzMTc5LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9._PtUy1JHQGO_A7xpEc1NXeEBu5V7IrfyeahZB6wV5tk', // Include the token in the headers
-                        },
-                        body: jsonEncode(<String, String>{
-                          'postId': widget.id.toString(),
-                        }),
-                      );
-
-                    } catch (e) {
-                      // Handle API call error
-                      print('API call failed: $e');
-                    }
-                 widget.isLikedByUser = !widget.isLikedByUser;
-                 widget.likes +=  widget.isLikedByUser ? 1 : -1;
-               likeIconColor = widget.isLikedByUser ? Colors.blue : Colors.grey;
-              });
-                },
-                child: Icon(
-                  Icons.thumb_up_alt_outlined,
-                  color:  likeIconColor = widget.isLikedByUser ? Colors.blue : Colors.grey,
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 10),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      // Handle like post
+                      widget.isLikedByUser = !widget.isLikedByUser;
+                      widget.likes +=
+                          widget.isLikedByUser ? 1 : -1;
+                      likeIconColor = widget.isLikedByUser
+                          ? Colors.blue
+                          : Colors.grey;
+                    });
+                  },
+                  child: Icon(
+                    Icons.thumb_up_alt_outlined,
+                    color: likeIconColor,
+                  ),
                 ),
-              ),
-              SizedBox(width: 8.0),
-              Text(
-                widget.likes.toString(),
-                style: TextStyle(
-                  color: Colors.grey,
+                SizedBox(width: 8.0),
+                Text(
+                  widget.likes.toString(),
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              SizedBox(width: 16.0),
-              GestureDetector(
-                onTap: () {
-                   showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return CommentModal(
-                    postId: widget.id,
-                    initialComments: widget.comments,
-                    postLikes: widget.likes,
-                    isLikedByUser: widget.isLikedByUser,
-
-                  );
-                },
-              );
-                },
-                child: Icon(
-                  Icons.mode_comment_outlined,
-                  color: Colors.grey,
+                SizedBox(width: 16.0),
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return CommentModal(
+                          postId: widget.id,
+                          initialComments: widget.comments,
+                          postLikes: widget.likes,
+                          isLikedByUser: widget.isLikedByUser,
+                        );
+                      },
+                    );
+                  },
+                  child: Icon(
+                    Icons.mode_comment_outlined,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              SizedBox(width: 8.0),
-              Text(
-                widget.comments.toString(),
-                style: TextStyle(
-                  color: Colors.grey,
+                SizedBox(width: 8.0),
+                Text(
+                  widget.comments.toString(),
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
+  
+           
 }
 
 class CommentModal extends StatefulWidget {

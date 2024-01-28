@@ -1,0 +1,249 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:friendly_mobile_app/domain/hobby.dart';
+import 'package:friendly_mobile_app/domain/hobbyCategory.dart';
+import 'package:friendly_mobile_app/screens/feed.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
+
+class AddPostScreen extends StatefulWidget {
+  @override
+  _AddPostScreenState createState() => _AddPostScreenState();
+}
+
+class _AddPostScreenState extends State<AddPostScreen> {
+  TextEditingController descriptionController = TextEditingController();
+  String imageUrl = '';
+  int? selectedCategoryId; // Track selected hobby category
+  int? selectedHobbyId; // Track selected hobby
+
+  List<HobbyCategory> hobbyCategories = []; // List to store hobby categories
+  List<Hobby> hobbies = []; // List to store hobbies based on the selected category
+
+  Future<void> _fetchInitialData() async {
+    await _getHobbyCategories();
+  }
+
+  Future<void> _getHobbyCategories() async {
+    
+    try {
+      final response = await http.get(
+        Uri.parse('https://localhost:7169/HobbyCategory'),
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData.containsKey('result')) {
+          List<dynamic> categories = responseData['result'];
+
+          setState(() {
+            hobbyCategories = categories.map((categoryJson) => HobbyCategory.fromJson(categoryJson)).toList();
+          });
+        } else {
+          print('Missing "result" key in the response');
+        }
+      } else {
+        print('Failed to fetch hobby categories: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching hobby categories: $e');
+    }
+  }
+
+  Future<void> _getHobbies(int categoryId) async {
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://localhost:7169/hobby'),
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData.containsKey('result')) {
+          List<dynamic> categories = responseData['result'];
+
+          setState(() {
+            hobbies = categories.map((categoryJson) => Hobby.fromJson(categoryJson)).toList();
+            print(hobbies);
+          });
+        } else {
+          print('Missing "result" key in the response');
+        }
+      } else {
+        print('Failed to fetch hobby categories: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching hobby categories: $e');
+    }
+  }
+
+  Future<void> _getImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final File imageFile = File(pickedFile.path);
+
+      List<int> imageBytes = await imageFile.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
+
+      setState(() {
+        imageUrl = base64Image;
+      });
+    }
+  }
+
+  Future<void> _createPost() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://localhost:7169/Post'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+        },
+        body: jsonEncode({
+          'description': descriptionController.text,
+          'imagePath': imageUrl,
+          'hobbyId': selectedHobbyId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Post created successfully');
+        
+         Fluttertoast.showToast(
+        msg: 'Post created successfully!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+        Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Feed()),
+      );
+      } else {
+        print('Failed to create post: ${response.body}');
+      }
+    } catch (e) {
+      print('Error creating post: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+@override
+Widget build(BuildContext context) {
+  bool isButtonEnabled = selectedHobbyId != null && descriptionController.text.isNotEmpty;
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Add Post'),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              await _getImage();
+            },
+            child: Text('Pick Image'),
+          ),
+          SizedBox(height: 16.0),
+          imageUrl.isNotEmpty
+              ? Image.memory(
+                  base64Decode(imageUrl),
+                  height: 100.0,
+                  fit: BoxFit.cover,
+                )
+              : Container(),
+          SizedBox(height: 16.0),
+          DropdownButton<int?>(
+            value: selectedCategoryId,
+            onChanged: (value) {
+              setState(() {
+                selectedCategoryId = value;
+                selectedHobbyId = null;
+                if (selectedCategoryId != null) {
+                  _getHobbies(selectedCategoryId!);
+                } else {
+                  hobbies = [];
+                  selectedHobbyId = null;
+                }
+              });
+            },
+            items: [
+              DropdownMenuItem<int?>(
+                value: null,
+                child: Text('Select Hobby Category'),
+              ),
+              ...hobbyCategories
+                  .map((category) => DropdownMenuItem<int?>(
+                        value: category.id,
+                        child: Text(category.name),
+                      ))
+                  .toList(),
+            ],
+          ),
+          SizedBox(height: 16.0),
+          DropdownButton<int?>(
+            value: selectedHobbyId,
+            onChanged: (value) {
+              setState(() {
+                selectedHobbyId = value;
+              });
+            },
+            items: hobbies
+                .map((hobby) => DropdownMenuItem<int?>(
+                      value: hobby.id,
+                      child: Text(hobby.title),
+                    ))
+                .toList(),
+            hint: Text('Select Hobby'),
+          ),
+          SizedBox(height: 16.0),
+          TextField(
+            controller: descriptionController,
+            onChanged: (value) {
+              setState(() {
+                // Update the state when the description changes
+              });
+            },
+            decoration: InputDecoration(
+              labelText: 'Description',
+              errorText: descriptionController.text.isEmpty ? 'Description is required' : null,
+            ),
+          ),
+          SizedBox(height: 16.0),
+          ElevatedButton(
+            onPressed: isButtonEnabled
+                ? () {
+                    _createPost();
+                  }
+                : null,
+            // Disable the button if hobby or description is missing
+            child: Text('Post'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+}

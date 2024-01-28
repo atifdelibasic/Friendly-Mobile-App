@@ -33,7 +33,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> register(String? email, String? password) async {
-    print("register");
     final Map<String, dynamic> apiBodyData = {
       'email': 'xodevon2716@ekcsof1t.com',
       'password': 'Lozinka123!',
@@ -65,8 +64,6 @@ class AuthProvider extends ChangeNotifier {
 
     final Map<String, dynamic> responseData = json.decode(response.body);
 
-    print(responseData);
-
     if (response.statusCode == 200) {
       var userData = responseData['data'];
 
@@ -97,8 +94,8 @@ class AuthProvider extends ChangeNotifier {
     print(email);
     print(password);
     final Map<String, dynamic> loginData = {
-      'email': "atif@zendev.se",
-      'password': "Lozinka123!"
+      'email': email,
+      'password':password
     };
 
     _loggedInStatus = Status.Authenticating;

@@ -26,17 +26,14 @@ class _LoginState extends State<Login> {
     AuthProvider auth = Provider.of<AuthProvider>(context);
 
     doLogin() {
-      print("do login");
       final form = _formKey.currentState;
       if (form!.validate()) {
-        print("forma nije dobra");
         form.save();
 
         final Future<Map<String, dynamic>> respose =
             auth.login(_email, _password);
         respose.then((response) {
           if (response['status']) {
-            print("response dobar logovan sii");
             User user = response['user'];
 
             Provider.of<UserProvider>(context, listen: false).setUser(user);

@@ -16,16 +16,20 @@ class Like {
     final firstName = user['firstName'] as String;
     final lastName = user['lastName'] as String;
     final fullName = '$firstName $lastName';
-    print("ovdje sam");
-    print(user['profileImageUrl']);
 
-    final profileImageUrl = user['profileImageUrl']  ?? 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
-    final modifiedProfileImageUrl = profileImageUrl == null ? 'https://localhost:7169/$profileImageUrl' : profileImageUrl;
+    String profileImageUrl = user['profileImageUrl'] ?? "";
+    if(profileImageUrl == "") {
+     profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
+    } else {
+      profileImageUrl = "https://localhost:7169/images/" + profileImageUrl;
+    }
+    
+    print(profileImageUrl);
     return Like(
       id:json['id'] as int,
       postId: json['postId'] as int,
       fullName: fullName,
-      profileImageUrl: modifiedProfileImageUrl,
+      profileImageUrl: profileImageUrl,
     );
   }
 }

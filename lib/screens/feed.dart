@@ -219,6 +219,11 @@ Future<void> fetch() async {
                 isLikedByUser: _posts[index].isLikedByUser,
                 dateCreated: _posts[index].dateCreated,
                 hobbyName: _posts[index].hobbyName,
+                onDelete: (postId) {
+                   setState(() {
+                    _posts.removeWhere((post) => post.id == postId);
+                  });
+                },
               );} else {
                 return  Padding(
                   padding: EdgeInsets.symmetric(vertical:32),

@@ -20,6 +20,7 @@ class PostCard extends StatefulWidget {
   bool isLikedByUser;
   final String dateCreated;
   final String hobbyName;
+  final Function(int postId) onDelete;
 
   PostCard({
     required this.id,
@@ -31,7 +32,8 @@ class PostCard extends StatefulWidget {
     required this.comments,
     required this.isLikedByUser,
     required this.dateCreated,
-    required this.hobbyName
+    required this.hobbyName,
+    required this.onDelete
   });
 
   @override
@@ -40,6 +42,21 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool _isExpanded = true;
+
+  _test () async {
+    print("hajde brisi");
+   final response = await http.delete(
+        Uri.parse('https://localhost:7169/Post/' + widget.id.toString()),
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+        },
+      );
+      print(response.statusCode);
+
+      if(response.statusCode == 200) {
+        widget.onDelete(widget.id);
+      }
+  }
 @override
   Widget build(BuildContext context) {
     Color likeIconColor = widget.isLikedByUser ? Colors.blue : Colors.grey;
@@ -118,7 +135,7 @@ class _PostCardState extends State<PostCard> {
                             ),
                           );
                           } else if (value == 'delete') {
-                            // Handle delete post
+                            _test();
                           }
                         },
                         itemBuilder: (BuildContext context) =>
@@ -300,9 +317,12 @@ class _CommentModalState extends State<CommentModal> {
      final response = await http.get(
         Uri.parse('https://localhost:7169/Comment/cursor?postId=${widget.postId}&limit=$limit${comments.isNotEmpty ? '&cursor=${comments.last.id}' : ''}'),
          headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTMzMTc5LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9._PtUy1JHQGO_A7xpEc1NXeEBu5V7IrfyeahZB6wV5tk', // Include the token in the headers
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Include the token in the headers
         },
       );
+      print("post id");
+      print(widget.postId);
+      print(response.body);
 
        if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
@@ -336,7 +356,7 @@ class _CommentModalState extends State<CommentModal> {
         Uri.parse('https://localhost:7169/Comment/'),
          headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2Nzg4ODQ5LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.SWVVOW_fomf8Fp4OrjFy3V6dHH0FsGh4_k9VIJfKU6g', // Include the token in the headers
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Include the token in the headers
         },
         body: jsonEncode({
           'postId': postId,
@@ -512,7 +532,7 @@ class _LikesModalState extends State<LikesModal> {
      final response = await http.get(
         Uri.parse('https://localhost:7169/like?postId=${widget.postId}&limit=$limit${likes.isNotEmpty ? '&cursor=${likes.last.id}' : ''}'),
          headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTMzMTc5LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9._PtUy1JHQGO_A7xpEc1NXeEBu5V7IrfyeahZB6wV5tk', // Include the token in the headers
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Include the token in the headers
         },
       );
 
@@ -619,7 +639,7 @@ Widget build(BuildContext context) {
                     ),
                   ],
                 ),
-                title: Text(user.profileImageUrl),
+                title: Text(user.fullName),
               );
             } else {
               return Padding(

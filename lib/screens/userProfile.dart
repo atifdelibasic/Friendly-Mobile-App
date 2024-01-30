@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'chat.dart';
+
 class UserProfilePage extends StatefulWidget {
   final int userId;
 
@@ -34,7 +36,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundImage: AssetImage('assets/profile_picture.jpg'), // Add your profile picture
+             // backgroundImage: AssetImage('assets/profile_picture.jpg'), // Add your profile picture
             ),
             SizedBox(height: 20),
             Text(
@@ -50,7 +52,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ElevatedButton(
               onPressed: () {
                 // Handle message button click
-                print('Message button clicked');
+               Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                  senderId: 1, // Replace with the actual senderId
+                  recipientId: 2, // Replace with the actual recipientId
+                ),
+              ),
+            );
               },
               child: Text('Message'),
             ),

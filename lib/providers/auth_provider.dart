@@ -89,10 +89,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> login(String? email, String? password) async {
-    print("login");
     var result;
-    print(email);
-    print(password);
     final Map<String, dynamic> loginData = {
       'email': email,
       'password':password
@@ -108,26 +105,19 @@ class AuthProvider extends ChangeNotifier {
         'Content-Type': 'application/json',
       },
     );
-
-    print("repsonse");
+    print("response");
     print(response.statusCode);
 
     if (response.statusCode == 200) {
-      print("code 200");
       final Map<String, dynamic> responseData = json.decode(response.body);
-
       print(responseData);
-
-      //   var userData = responseData['Content'];
-      print("auth user start");
       User authUser = User.fromJson(responseData);
-      print("auth user");
-      print(authUser);
-
       UserPreferences().saveUser(authUser);
 
       _loggedInStatus = Status.LoggedIn;
+      print("notify listeners");
       notifyListeners();
+      print("puklo");
 
       result = {'status': true, 'message': 'Successful', 'user': authUser};
     } else {

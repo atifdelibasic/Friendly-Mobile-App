@@ -50,6 +50,7 @@ dependencies:
   fluttertoast: ^8.0.2
   geolocator: ^10.1.0
   permission_handler: ^11.0.1
+  signalr_netcore: ^0.1.7+2-nullsafety.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

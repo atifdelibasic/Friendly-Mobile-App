@@ -31,10 +31,11 @@ class _LoginState extends State<Login> {
         form.save();
 
         final Future<Map<String, dynamic>> respose =
-            auth.login(_email, _password);
+        auth.login(_email, _password);
         respose.then((response) {
           if (response['status']) {
             User user = response['user'];
+            print("doso ovdje");
 
             Provider.of<UserProvider>(context, listen: false).setUser(user);
             Navigator.pushReplacementNamed(context, '/feed');

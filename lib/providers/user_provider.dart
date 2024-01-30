@@ -7,7 +7,9 @@ class UserProvider extends ChangeNotifier {
   User? get user => _user;
 
   void setUser(User? user) {
+    print("set user");
     _user = user;
-    // notifyListeners();
+    print("notify listeners");
+    notifyListeners();
   }
 }

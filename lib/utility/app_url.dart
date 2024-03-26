@@ -5,4 +5,7 @@ class AppUrl {
   static const String login = '$baseUrl/user/login';
   static const String register = '$baseUrl/user/register';
   static const String forgotPassword = '$baseUrl/forgot-password';
+  static const String likePost = '$baseUrl/like';
+
+
 }

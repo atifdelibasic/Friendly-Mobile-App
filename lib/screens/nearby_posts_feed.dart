@@ -1,38 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
-import 'package:friendly_mobile_app/screens/test.dart';
+import 'package:friendly_mobile_app/widgets/post_card.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import '../domain/post.dart';
 import 'add_post_screen.dart';
 import 'feed.dart';
-
-class Post {
-  final int id;
-  final String profileImage;
-  final String username;
-  final String postImage;
-  final String description;
-  final int likes;
-  final int comments;
-  final bool isLikedByUser;
-  final String dateCreated;
-  final String hobbyName;
-
-  Post({
-    required this.id,
-    required this.profileImage,
-    required this.username,
-    required this.postImage,
-    required this.description,
-    required this.likes,
-    required this.comments,
-    required this.isLikedByUser,
-    required this.dateCreated,
-    required this.hobbyName
-  });
-}
 
 class NearbyPostsFeed extends StatefulWidget {
   const NearbyPostsFeed({Key? key}) : super(key: key);
@@ -63,7 +37,7 @@ Future<void> fetch() async {
         Uri.parse('https://localhost:7169/post/friends?limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
         // Add any necessary headers or parameters here
          headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Include the token in the headers
+          'Authorization': 'Bearer ' + token.toString(), // Include the token in the headers
         },
       );
       isLoading = false;
@@ -71,26 +45,9 @@ Future<void> fetch() async {
        if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
 
-        final List<Post> items = responseData.map((data) {
-          final user = data['user'];
-          final firstName = user['firstName'] as String;
-          final lastName = user['lastName'] as String;
-          final fullName = '$firstName $lastName';
-          final profileImageUrl = 'https://localhost:7169/images/' + user['profileImageUrl'] as String? ?? 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
-          print(profileImageUrl);
-          return Post(
-            id: data['id'] ?? '', 
-            profileImage:  profileImageUrl, // Adjust this based on your API response
-            username: '${data['user']['firstName']} ${data['user']['lastName']}',
-            postImage:  data['imagePath'] ?? '', // Adjust this based on your API response
-            description: data['description'] ?? '',
-            likes: data['likeCount'] ?? 0,
-            comments: data['commentCount'] ?? 0,
-            isLikedByUser: data['isLikedByUser'] ?? false,
-            dateCreated: data['dateCreated'],
-            hobbyName: data['hobby']['title']
-          );
-        }).toList();
+        final List<Post> items = responseData.map((responseData) {
+            return Post.fromJson(responseData);
+          }).toList();
 
             setState(() {
           isLoading = false;
@@ -113,7 +70,6 @@ Future<void> fetch() async {
     fetch();
 
     controller.addListener(() {
-      print("scroll");
       if(controller.position.maxScrollExtent == controller.offset) {
         fetch();
        }
@@ -207,18 +163,7 @@ Future<void> fetch() async {
           itemBuilder: (context, index) {
             if(index < _posts.length ) {
               return PostCard(
-                id: _posts[index].id,
-                comments: _posts[index].comments,
-                likes: _posts[index].likes,
-                profileImage: _posts[index].profileImage,
-                postImage: _posts[index].postImage.isNotEmpty
-                ? "https://localhost:7169/images/" + _posts[index].postImage
-                : "",
-                username: _posts[index].username,
-                description: _posts[index].description,
-                isLikedByUser: _posts[index].isLikedByUser,
-                dateCreated: _posts[index].dateCreated,
-                hobbyName: _posts[index].hobbyName,
+                post: _posts[index],
                 onDelete: (postId) {
                    setState(() {
                     _posts.removeWhere((post) => post.id == postId);

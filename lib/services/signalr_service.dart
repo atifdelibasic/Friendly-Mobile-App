@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:signalr_netcore/signalr_client.dart';
+import 'package:signalr_netcore/msgpack_hub_protocol.dart';
+
 
 class SignalRService {
   late HubConnection _hubConnection;
 
   Future<void> connect(String url, String accessToken) async {
 
-  final hubConnectionBuilder = HubConnectionBuilder().withUrl(
+  _hubConnection = HubConnectionBuilder().withUrl(
     url,
     options: HttpConnectionOptions(
       accessTokenFactory: () async {
@@ -15,18 +17,20 @@ class SignalRService {
         return accessToken;
       },
     ),
-  );
+  )
+  .withHubProtocol(MessagePackHubProtocol())
+          .withAutomaticReconnect()
+          .build();
 
     print("uredno");
 
-    _hubConnection = hubConnectionBuilder.build();
-
     await _hubConnection.start();
+    print("connection started");
   }
 
   Future<void> sendMessage(String message) async {
   try {
-    if (_hubConnection != null && _hubConnection.state == HubConnectionState.Connected) {
+    if ( _hubConnection.state == HubConnectionState.Connected) {
       final result = await _hubConnection.invoke('SendMessageAsync', args: [message]);
       // Handle the result or any other logic here
     } else {
@@ -38,9 +42,14 @@ class SignalRService {
   }
 }
 
-  void onReceiveMessage(Function( String message, bool me)) {
+  void onReceiveMessage(Function(String message, bool isMe) callback) {
     _hubConnection.on('SendMessageAsync', (arguments) {
-      
+
+      if(arguments == null) {
+        return;
+      }
+
+      callback(arguments[0].toString(), arguments[1].toString().toLowerCase() == "true");
     });
   }
 

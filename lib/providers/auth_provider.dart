@@ -32,14 +32,12 @@ class AuthProvider extends ChangeNotifier {
     _registeredInStatus = value;
   }
 
-  Future<Map<String, dynamic>> register(String? email, String? password) async {
+  Future<Map<String, dynamic>> register(String? email, String? password, String? firstName, String? lastName) async {
     final Map<String, dynamic> apiBodyData = {
-      'email': 'xodevon2716@ekcsof1t.com',
-      'password': 'Lozinka123!',
-      'confirmPassword': 'Lozinka123!',
-      'firstName': "Flutter",
-      'lastName': "Flutter",
-      'birthDate': '2022-11-15'
+  "firstName": firstName,
+  "lastName": lastName,
+  "email": email,
+  "password": password
     };
 
     try {
@@ -49,7 +47,9 @@ class AuthProvider extends ChangeNotifier {
       print("response");
 
       final responseBody = json.decode(response.body);
+      print(responseBody);
       return responseBody;
+      
     } catch (e) {
       throw Exception('Failed to register user: $e');
     }
@@ -97,6 +97,7 @@ class AuthProvider extends ChangeNotifier {
 
     _loggedInStatus = Status.Authenticating;
     notifyListeners();
+    print(AppUrl.login);
 
     Response response = await post(
       Uri.parse(AppUrl.login),
@@ -109,23 +110,31 @@ class AuthProvider extends ChangeNotifier {
     print(response.statusCode);
 
     if (response.statusCode == 200) {
+      print("evo ga dvi joje");
       final Map<String, dynamic> responseData = json.decode(response.body);
+      print("response data");
       print(responseData);
-      User authUser = User.fromJson(responseData);
+      User authUser = User.fromJson(responseData['user']);
+      authUser.token = responseData['message'];
+      print("auth user");
+      print(authUser);
       UserPreferences().saveUser(authUser);
 
       _loggedInStatus = Status.LoggedIn;
       print("notify listeners");
       notifyListeners();
-      print("puklo");
+
+      print(json.decode(response.body));
 
       result = {'status': true, 'message': 'Successful', 'user': authUser};
     } else {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
       _loggedInStatus = Status.NotLoggedIn;
       notifyListeners();
       result = {
         'status': false,
-        'message': json.decode(response.body)['error']
+        'message': responseData['message']
       };
     }
 

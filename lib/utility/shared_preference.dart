@@ -5,10 +5,12 @@ class UserPreferences {
   Future<bool> saveUser(User user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    prefs.setString('name', user.name);
+    prefs.setString('firstName', user.firstName);
+    prefs.setString('lastName', user.lastName);
     prefs.setString('email', user.email);
-    prefs.setString('phone', user.phone);
     prefs.setString('token', user.token);
+    prefs.setInt('id', user.id);
+    prefs.setString('profileImageUrl', user.profileImage);
 
     return await prefs.setBool('loggedIn', true);
   }
@@ -16,30 +18,32 @@ class UserPreferences {
   Future<User> getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     int id = prefs.getInt("id") ?? 0;
-    String name = prefs.getString("name") ?? "";
+    String firstName = prefs.getString("firstName") ?? "";
     String email = prefs.getString("email") ?? "";
-    String phone = prefs.getString("phone") ?? "";
-    String type = prefs.getString("type") ?? "";
+    String lastName = prefs.getString("lastName") ?? "";
     String token = prefs.getString("token") ?? "";
+    String profileImageUrl = prefs.getString("profileImageUrl") ?? "";
 
     return User(
         id: id,
-        name: name,
+        firstName: firstName,
         email: email,
-        phone: phone,
+        lastName: lastName,
         token: token,
+        profileImage: profileImageUrl
        );
   }
 
   void removeUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    prefs.remove('userId');
-    prefs.remove('name');
+    prefs.remove('id');
+    prefs.remove('lastName');
     prefs.remove('email');
-    prefs.remove('phone');
-    prefs.remove('type');
+    prefs.remove('firstName');
     prefs.remove('token');
+    prefs.remove('profileImageUrl');
+
   }
 
   Future<String> getToken() async {

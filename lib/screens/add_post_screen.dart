@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/domain/hobby.dart';
 import 'package:friendly_mobile_app/domain/hobbyCategory.dart';
@@ -9,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import '../utility/shared_preference.dart';
 
 
 class AddPostScreen extends StatefulWidget {
@@ -19,14 +19,14 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   TextEditingController descriptionController = TextEditingController();
   String imageUrl = '';
-  int? selectedCategoryId; // Track selected hobby category
-  int? selectedHobbyId; // Track selected hobby
+  int? selectedCategoryId; 
+  int? selectedHobbyId; 
   double? latitude;
   double? longitude;
   bool isLocationLoading = false;
 
-  List<HobbyCategory> hobbyCategories = []; // List to store hobby categories
-  List<Hobby> hobbies = []; // List to store hobbies based on the selected category
+  List<HobbyCategory> hobbyCategories = []; 
+  List<Hobby> hobbies = []; 
 
   Future<void> _fetchInitialData() async {
     await _getHobbyCategories();
@@ -35,10 +35,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Future<void> _getHobbyCategories() async {
     
     try {
+
+    String token =  await UserPreferences().getToken();
+
       final response = await http.get(
         Uri.parse('https://localhost:7169/HobbyCategory'),
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+          'Authorization': 'Bearer ' + token ,
         },
       );
 
@@ -65,10 +68,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Future<void> _getHobbies(int categoryId) async {
 
     try {
+    String token =  await UserPreferences().getToken();
+
       final response = await http.get(
         Uri.parse('https://localhost:7169/hobby'),
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+          'Authorization': 'Bearer ' + token,
         },
       );
 
@@ -152,11 +157,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   Future<void> _createPost() async {
     try {
+    String token =  await UserPreferences().getToken();
+
       final response = await http.post(
         Uri.parse('https://localhost:7169/Post'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2NTQ1MTE4LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.OhTKrSgEnOft2M7HK6FZo-TeouIYz8_Ef4FgNkl8I14',
+          'Authorization': 'Bearer '  + token,
         },
         body: jsonEncode({
           'description': descriptionController.text,

@@ -1,38 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/screens/nearby_posts_feed.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
-import 'package:friendly_mobile_app/screens/test.dart';
+import 'package:friendly_mobile_app/widgets/post_card.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import '../domain/post.dart';
 import 'add_post_screen.dart';
-
-class Post {
-  final int id;
-  final String profileImage;
-  final String username;
-  final String postImage;
-  final String description;
-  final int likes;
-  final int comments;
-  final bool isLikedByUser;
-  final String dateCreated;
-  final String hobbyName;
-
-  Post({
-    required this.id,
-    required this.profileImage,
-    required this.username,
-    required this.postImage,
-    required this.description,
-    required this.likes,
-    required this.comments,
-    required this.isLikedByUser,
-    required this.dateCreated,
-    required this.hobbyName
-  });
-}
 
 class Feed extends StatefulWidget {
   const Feed({Key? key}) : super(key: key);
@@ -43,7 +17,6 @@ class Feed extends StatefulWidget {
 class _FeedState extends State<Feed> {
 
   bool hasMore = true;
-  bool test = false;
   bool isLoading = false;
   final controller = ScrollController();
   List<Post> _posts = [];
@@ -57,40 +30,22 @@ Future<void> fetch() async {
       isLoading = true;
     });
 
-    Future<String> token = UserPreferences().getToken();
+    String token =  await UserPreferences().getToken();
 
      final response = await http.get(
         Uri.parse('https://localhost:7169/post/friends?limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
-        // Add any necessary headers or parameters here
          headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Include the token in the headers
+          'Authorization': 'Bearer $token',
         },
       );
       isLoading = false;
 
        if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
-
-        final List<Post> items = responseData.map((data) {
-          final user = data['user'];
-          final firstName = user['firstName'] as String;
-          final lastName = user['lastName'] as String;
-          final fullName = '$firstName $lastName';
-          final profileImageUrl = 'https://localhost:7169/images/' + user['profileImageUrl'] as String? ?? 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
-          print(profileImageUrl);
-          return Post(
-            id: data['id'] ?? '', 
-            profileImage:  profileImageUrl, // Adjust this based on your API response
-            username: '${data['user']['firstName']} ${data['user']['lastName']}',
-            postImage:  data['imagePath'] ?? '', // Adjust this based on your API response
-            description: data['description'] ?? '',
-            likes: data['likeCount'] ?? 0,
-            comments: data['commentCount'] ?? 0,
-            isLikedByUser: data['isLikedByUser'] ?? false,
-            dateCreated: data['dateCreated'],
-            hobbyName: data['hobby']['title']
-          );
-        }).toList();
+           
+        final List<Post> items = responseData.map((responseData) {
+            return Post.fromJson(responseData);
+          }).toList();
 
             setState(() {
           isLoading = false;
@@ -113,7 +68,6 @@ Future<void> fetch() async {
     fetch();
 
     controller.addListener(() {
-      print("scroll");
       if(controller.position.maxScrollExtent == controller.offset) {
         fetch();
        }
@@ -133,22 +87,40 @@ Future<void> fetch() async {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-     appBar: AppBar(
-        title: Text('Friendly'),
-         automaticallyImplyLeading: false,
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddPostScreen()),
-              );
-            },
-            child: Text('Add Post'),
+   return Scaffold(
+  appBar: AppBar(
+    title: Text('Friendly'),
+    automaticallyImplyLeading: false,
+    actions: [
+      IconButton(onPressed: (){
+        showSearch(context: context, delegate: CustomSearchDelegate(),);
+      },
+       icon: const Icon(Icons.search)),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddPostScreen()),
+          );
+        },
+        child: Text('Add Post'),
+      ),
+      PopupMenuButton(
+        itemBuilder: (BuildContext context) => [
+          PopupMenuItem(
+            value: "logout",
+            child:const Text("Logout"),
           ),
         ],
+        onSelected: (value) {
+          if (value == "logout") {
+               _showLogoutConfirmationDialog(context);
+          }
+        },
       ),
+    ],
+  ),
+
     bottomNavigationBar: BottomAppBar(
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -189,7 +161,6 @@ Future<void> fetch() async {
             IconButton(
               icon: Icon(Icons.person_add),
               onPressed: () {
-                // Add your friend requests icon onPressed logic here
               },
             ),
             Text('Requests'),
@@ -207,18 +178,7 @@ Future<void> fetch() async {
           itemBuilder: (context, index) {
             if(index < _posts.length ) {
               return PostCard(
-                id: _posts[index].id,
-                comments: _posts[index].comments,
-                likes: _posts[index].likes,
-                profileImage: _posts[index].profileImage,
-                postImage: _posts[index].postImage.isNotEmpty
-                ? "https://localhost:7169/images/" + _posts[index].postImage
-                : "",
-                username: _posts[index].username,
-                description: _posts[index].description,
-                isLikedByUser: _posts[index].isLikedByUser,
-                dateCreated: _posts[index].dateCreated,
-                hobbyName: _posts[index].hobbyName,
+                post: _posts[index],
                 onDelete: (postId) {
                    setState(() {
                     _posts.removeWhere((post) => post.id == postId);
@@ -234,5 +194,86 @@ Future<void> fetch() async {
         ),
       ),
     );
+  }
+}
+
+
+void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Logout"),
+          content: Text("Are you sure you want to logout?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                UserPreferences().removeUser();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+class CustomSearchDelegate extends SearchDelegate {
+  List<String> searchTerms = ["Apple", "Banana", "Pear", "Watermelons", "Oranges", "Kiwi", "Tomato"];
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [IconButton(onPressed: () { query = "";}, icon: const Icon(Icons.clear))];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(onPressed: () { close(context, null);}, icon: const Icon(Icons.arrow_back));
+  }
+
+   @override
+  Widget buildResults(BuildContext context) {
+    print("test");
+    List<String> matchQuery = [];
+    for (var fruit in searchTerms) {
+      if(fruit.toLowerCase().contains(query.toLowerCase())) {
+       // matchQuery.add(fruit);
+      }
+    }
+    return ListView.builder(
+      itemCount: matchQuery.length,
+      itemBuilder: (context, index) {
+      var result = matchQuery[index];
+
+      return ListTile(
+        title: Text(result),
+      );
+    });
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+     List<String> matchQuery = [];
+    for (var fruit in searchTerms) {
+      if(fruit.toLowerCase().contains(query.toLowerCase())) {
+        matchQuery.add(fruit);
+      }
+    }
+    return ListView.builder(
+      itemCount: matchQuery.length,
+      itemBuilder: (context, index) {
+      var result = matchQuery[index];
+
+      return ListTile(
+        title: Text(result),
+      );
+    });
   }
 }

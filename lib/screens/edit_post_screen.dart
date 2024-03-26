@@ -4,6 +4,8 @@ import 'package:friendly_mobile_app/screens/feed.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utility/shared_preference.dart';
+
 class EditPostScreen extends StatefulWidget {
   final String description;
   final int postId;
@@ -30,12 +32,15 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
   Future<void> _createPost() async {
     try {
+
+    String token =  await UserPreferences().getToken();
+
       final response = await http.put(
         Uri.parse('https://localhost:7169/Post/' + widget.postId.toString()),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization':
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF0aWYuZGVsaWJhc2ljQGdtYWlsLmNvbSIsInVzZXJpZCI6IjEiLCJmaXJzdG5hbWUiOiJBdGlmIiwibGFzdG5hbWUiOiJEZWxpYmFzaWMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzA2ODk0ODI3LCJpc3MiOiJodHRwOi8vZnJpZW5kbHkuYXBwIiwiYXVkIjoiaHR0cDovL2ZyZWluZGx5LmFwcCJ9.CbtclDI3dsXlmNFC1XCKmXL2hZRE_KYXvAqoqC-F26k', // Replace with your actual access token
+              'Bearer ' + token, // Replace with your actual access token
         },
         body: jsonEncode({
           'description': descriptionController.text,

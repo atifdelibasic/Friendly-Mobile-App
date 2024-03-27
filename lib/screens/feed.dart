@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/screens/nearby_posts_feed.dart';
+import 'package:friendly_mobile_app/screens/user_profile.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:friendly_mobile_app/widgets/post_card.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../domain/post.dart';
+import '../domain/user.dart';
 import 'add_post_screen.dart';
 
 class Feed extends StatefulWidget {
@@ -226,8 +228,8 @@ void _showLogoutConfirmationDialog(BuildContext context) {
   }
 
 
-class CustomSearchDelegate extends SearchDelegate {
-  List<String> searchTerms = ["Apple", "Banana", "Pear", "Watermelons", "Oranges", "Kiwi", "Tomato"];
+class CustomSearchDelegate extends SearchDelegate<Future<Widget>?> {
+
   @override
   List<Widget> buildActions(BuildContext context) {
     return [IconButton(onPressed: () { query = "";}, icon: const Icon(Icons.clear))];
@@ -238,42 +240,81 @@ class CustomSearchDelegate extends SearchDelegate {
     return IconButton(onPressed: () { close(context, null);}, icon: const Icon(Icons.arrow_back));
   }
 
+  Future<List<User>> serachdb() async {
+    String token =  await UserPreferences().getToken();
+    
+     final response = await http.get(
+        Uri.parse('https://localhost:7169/User/cursor?limit=99&text=${query.toLowerCase()}'),
+         headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+       final List<dynamic> responseData = json.decode(response.body);
+           
+        final List<User> items = responseData.map((responseData) {
+            return User.fromJson(responseData);
+          }).toList();
+   
+    return items;
+  }
+
    @override
   Widget buildResults(BuildContext context) {
-    print("test");
-    List<String> matchQuery = [];
-    for (var fruit in searchTerms) {
-      if(fruit.toLowerCase().contains(query.toLowerCase())) {
-       // matchQuery.add(fruit);
-      }
-    }
-    return ListView.builder(
-      itemCount: matchQuery.length,
-      itemBuilder: (context, index) {
-      var result = matchQuery[index];
+      return FutureBuilder(
+      future: serachdb(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
 
-      return ListTile(
-        title: Text(result),
-      );
-    });
+           List<User>? users = snapshot.data;
+          return ListView.builder(
+            itemCount: users!.length,
+            itemBuilder: (context, index) {
+    User user = users[index];
+    return GestureDetector(
+      onTap: () {
+        print("alo");
+        // Navigate to the detail screen when the ListTile is tapped
+       
+      },
+      child: Card(
+        child: InkWell(
+          onTap: () {
+            // You can add any additional action here if needed
+            print("test");
+             Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UserProfilePage(user: user)),
+        );
+          },
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(user.profileImage),
+            ),
+            title: Text(
+              "${user.firstName} ${user.lastName}",
+              style: TextStyle(fontSize: 16.0), // Adjust the font size as needed
+            ), 
+            subtitle: Text(
+              user.email,
+              style: TextStyle(fontSize: 14.0), // Adjust the font size as needed
+            ), 
+          ),
+        ),
+      ),
+    );
+  },
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      },
+    );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-     List<String> matchQuery = [];
-    for (var fruit in searchTerms) {
-      if(fruit.toLowerCase().contains(query.toLowerCase())) {
-        matchQuery.add(fruit);
-      }
-    }
-    return ListView.builder(
-      itemCount: matchQuery.length,
-      itemBuilder: (context, index) {
-      var result = matchQuery[index];
-
-      return ListTile(
-        title: Text(result),
-      );
-    });
+   
+    return Text("");
   }
 }

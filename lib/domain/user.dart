@@ -30,7 +30,7 @@ class User {
     return User(
       id: responseData['id'] ?? 0,
       firstName: responseData['firstName'] ?? "",
-      lastName: responseData['firstName'] ?? "",
+      lastName: responseData['lastName'] ?? "",
       email: responseData['email'] ?? "" ,
       token: responseData['token'] ?? "" ,
       fullName: "$firstName $lastName",

@@ -84,6 +84,7 @@ Future<void> fetch() async {
       isLoading = false;
 
        if (response.statusCode == 200) {
+        print("200");
         final List<dynamic> responseData = json.decode(response.body);
 
         final List<Post> items = responseData.map((responseData) {
@@ -107,15 +108,18 @@ Future<void> fetch() async {
 }
   @override
   void initState() {
+    print("hello");
     super.initState();
     fetch();
-    fetchFriendRequestStatus();
+    //fetchFriendRequestStatus();
 
     controller.addListener(() {
       if(controller.position.maxScrollExtent == controller.offset) {
         fetch();
        }
     });
+
+    print("setano sve");
   }
 
   Future<void> _refreshFeed() async {
@@ -127,7 +131,7 @@ Future<void> fetch() async {
     });
 
     fetch();
-    fetchFriendRequestStatus();
+    //fetchFriendRequestStatus();
   }
 
  @override
@@ -153,8 +157,7 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    body: _posts.isEmpty
-        ? Center(child: CircularProgressIndicator())
+    body
         : RefreshIndicator(
             onRefresh: _refreshFeed,
             child: ListView.builder(

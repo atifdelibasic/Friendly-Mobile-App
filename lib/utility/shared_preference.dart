@@ -30,7 +30,8 @@ class UserPreferences {
         email: email,
         lastName: lastName,
         token: token,
-        profileImage: profileImageUrl
+        profileImage: profileImageUrl,
+        description: "",
        );
   }
 

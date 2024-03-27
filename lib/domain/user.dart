@@ -7,6 +7,7 @@ class User {
   String token;
   String? fullName;
   String profileImage;
+  String description;
 
   User({
     required this.id,
@@ -15,6 +16,7 @@ class User {
     required this.email,
     required this.token,
     required this.profileImage,
+    required this.description,
     this.fullName,
   });
 
@@ -22,7 +24,7 @@ class User {
     String firstName = responseData['firstName'] ?? "";
     String lastName = responseData['lastName'] ?? "";
 
-      String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=${"asdsad"}&size=300';
+      String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=$firstName $lastName&size=300';
     if(responseData['profileImageUrl'] != null) {
       profileImageUrl = 'https://localhost:7169/images/' + responseData['profileImageUrl'] as String;
     }
@@ -34,7 +36,8 @@ class User {
       email: responseData['email'] ?? "" ,
       token: responseData['token'] ?? "" ,
       fullName: "$firstName $lastName",
-      profileImage: profileImageUrl
+      profileImage: profileImageUrl,
+      description: responseData['description'] ?? ""
     );
   }
 }

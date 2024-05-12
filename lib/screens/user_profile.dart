@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_mobile_app/domain/hobby.dart';
 import 'package:friendly_mobile_app/screens/chat.dart';
 import 'package:friendly_mobile_app/utility/app_url.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
@@ -10,6 +11,7 @@ import 'dart:convert';
 import '../domain/post.dart';
 import '../domain/user.dart';
 import '../providers/user_provider.dart';
+import 'edit_profile_screen.dart';
 
 class UserProfilePage extends StatefulWidget {
   final User user;
@@ -27,38 +29,75 @@ class __UserProfilePageState extends State<UserProfilePage> {
   final controller = ScrollController();
   List<Post> _posts = [];
   late int friendRequestStatus = 0;
+  late int id = 0;
+  late int friendId = 0;
+  List<Hobby> hobbies = [];
+  bool isLoadingFriendStatus = true;
+
+  void fetchHobbies() async {
+     String token =  await UserPreferences().getToken();
+    final uri = 'https://localhost:7169/User/${widget.user.id}/hobbies';
+     final response = await http.get(
+        Uri.parse(uri),
+         headers: {
+          'Authorization': 'Bearer $token', 
+        },
+      );
+
+       if (response.statusCode == 200) {
+        final List<dynamic> responseData = json.decode(response.body);
+
+        final List<Hobby> items = responseData.map((responseData) {
+            return Hobby.fromJson(responseData);
+          }).toList();
+
+        hobbies = items;
+       }
+
+  }
 
   void fetchFriendRequestStatus() async {
+    setState(() {
+      isLoadingFriendStatus = true;
+    });
+    print("fetch friend requests");
     try {
       String token = await UserPreferences().getToken();
-      print("user id");
-      print(widget.user.id);
-      print(token);
       final response = await http.get(
         Uri.parse("https://localhost:7169/Profiles/${widget.user.id}/friendship-status"),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
- print("status");
       print(response.statusCode);
-      Map<String, dynamic> responseData = json.decode(response.body);
-     
-    
-      if (response.statusCode == 200) {
-        // Parse the response and extract friend request status
-        print("status je 200");
+      if(response.body == "") {
+        print("izifji");
         setState(() {
+        friendRequestStatus = 0;
+        friendId = 0;
+        id = 0;
+        isLoadingFriendStatus = false;
+        });
+        return;
+      }
+      Map<String, dynamic> responseData = json.decode(response.body);
+     print("dkodiraj data");
+    
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Parse the response and extract friend request status
+        setState(() {
+          print("setuj jaro");
+          print(friendRequestStatus);
       int status = responseData['status'];
-  print("status");
-      print(status);
          friendRequestStatus = status;
+         id = responseData['id'];
+         friendId = responseData['user']['id'];
+         isLoadingFriendStatus = false;
+
         });
       } else {
         throw Exception('Failed to fetch friend request status');
       }
-      print("state");
-      print(friendRequestStatus);
     } catch (e) {
       print('Error fetching friend request status: $e');
     }
@@ -84,7 +123,6 @@ Future<void> fetch() async {
       isLoading = false;
 
        if (response.statusCode == 200) {
-        print("200");
         final List<dynamic> responseData = json.decode(response.body);
 
         final List<Post> items = responseData.map((responseData) {
@@ -107,19 +145,18 @@ Future<void> fetch() async {
       }
 }
   @override
+  
   void initState() {
-    print("hello");
     super.initState();
     fetch();
-    //fetchFriendRequestStatus();
+    fetchHobbies();
+    fetchFriendRequestStatus();
 
     controller.addListener(() {
       if(controller.position.maxScrollExtent == controller.offset) {
         fetch();
        }
     });
-
-    print("setano sve");
   }
 
   Future<void> _refreshFeed() async {
@@ -131,8 +168,18 @@ Future<void> fetch() async {
     });
 
     fetch();
-    //fetchFriendRequestStatus();
+    fetchFriendRequestStatus();
   }
+
+  void _navigateToEditProfile() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditProfileScreen(user: widget.user),
+    ),
+  );
+}
+
 
  @override
 Widget build(BuildContext context) {
@@ -141,22 +188,22 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
-      title: Text('User Profile'),
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back),
-        onPressed: () {
-          Navigator.pop(context);
-        },
+  title: Text('User Profile'),
+  leading: IconButton(
+    icon: Icon(Icons.arrow_back),
+    onPressed: () {
+      Navigator.pop(context);
+    },
+  ),
+  actions: <Widget>[
+    if (user?.id == widget.user.id) // Replace "condition" with your actual condition
+      IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: _navigateToEditProfile,
       ),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.logout),
-          onPressed: () {
-           // _showLogoutConfirmationDialog(context);
-          },
-        ),
-      ],
-    ),
+   
+  ],
+),
     body
         : RefreshIndicator(
             onRefresh: _refreshFeed,
@@ -182,14 +229,71 @@ Widget build(BuildContext context) {
                         SizedBox(height: 10),
                         Center(
                           child: Text(
-                            widget.user.firstName,
+                            "${widget.user.firstName} ${widget.user.lastName}",
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                         buildFriendRequestButton(friendRequestStatus, widget.user.id, user?.id  ?? 0),
+                        Divider(),
+                       Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Description", // Label indicating the description section
+                              style: TextStyle(
+                                fontSize: 16, // Adjust the font size as needed
+                                fontWeight: FontWeight.bold, // Optionally, make the label bold
+                              ),
+                            ),
+                            SizedBox(height: 8), // Add some space between the label and the description
+                            Text(
+                              widget.user.description == "" ? "No data" : widget.user.description,
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                        Divider(),
+                       Text(
+                              "Hobbies & intrests", // Label indicating the description section
+                              style: TextStyle(
+                                fontSize: 16, // Adjust the font size as needed
+                                fontWeight: FontWeight.bold, // Optionally, make the label bold
+                              ),
+                            ),
+
+                      Column(
+      children: [
+       Center(
+  child: Center(
+  child: Column(
+    children: [
+      Center( // Expand to take available vertical space
+        child: ListView.builder(
+          shrinkWrap: true, // Ensure the inner list doesn't occupy more space than needed
+          itemCount: hobbies.length,
+          itemBuilder: (BuildContext context, int innerIndex) {
+            return Center(
+              child: Text(hobbies[innerIndex].title),
+            );
+          },
+        ),
+      ),
+    ],
+  ),
+)
+),
+      ]),
+        if(hobbies.isEmpty) 
+        Center(child: Text("No hobbies or intrests"),),
+
+                         if(user?.id != widget.user.id)  
+                         buildFriendRequestButton(),
+                         if(user?.id != widget.user.id) 
                          ElevatedButton(
                           onPressed: () {
                             // Navigate to the desired screen
@@ -229,11 +333,11 @@ Widget build(BuildContext context) {
           ),
   );
 }
-}
- // Function to build friend request button based on friendRequestStatus
- Widget buildFriendRequestButton(int friendRequestStatus, int id, int userId) {
-  print("usao u  build");
-  print(friendRequestStatus);
+
+ Widget buildFriendRequestButton() {
+  if(isLoading ) {
+    return CircularProgressIndicator();
+  }
 
   if (friendRequestStatus == 0) {
     return ElevatedButton(
@@ -243,15 +347,15 @@ Widget build(BuildContext context) {
       },
       child: Text('Send Friend Request'),
     );
-  } else if (friendRequestStatus == 1 && id == userId) {
+  } else if (friendRequestStatus == 1 && widget.user.id != friendId) {
     return ElevatedButton(
       onPressed: () {
         // Perform action to cancel friend request
         cancelFriendRequest();
       },
-      child: Text('Cancel Friend Request'),
+      child: Text('Cancel request'),
     );
-  } else if (friendRequestStatus == 1) {
+  } else if (friendRequestStatus == 1 && widget.user.id == friendId) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -272,26 +376,88 @@ Widget build(BuildContext context) {
         ),
       ],
     );
-  } else if (friendRequestStatus == 3) {
-    return CircularProgressIndicator(); // Show loading indicator while performing action
+  } else if (friendRequestStatus == 2) {
+      return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Friends"),
+        ElevatedButton(
+          onPressed: () {
+            cancelFriendRequest();
+          },
+          child: Text('remove friend'),
+        ),
+      ],
+    );
   } else {
     return SizedBox(); // Return empty widget for unsupported states
   }
 }
 
 
-void sendFriendRequest() {
-  // Implement API call to send friend request
+void sendFriendRequest() async {
+   String token =  await UserPreferences().getToken();
+
+  final Map<String, String> headers = {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  };
+
+   final Map<String, dynamic> body = {"id":widget.user.id};
+
+  final response = await http.post(
+      Uri.parse(AppUrl.baseUrl + "/profiles/${widget.user.id}/friend-requests"),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    fetchFriendRequestStatus();
 }
 
-void cancelFriendRequest() {
-  // Implement API call to cancel friend request
+void cancelFriendRequest() async{
+  print("camcel");
+   String token =  await UserPreferences().getToken();
+
+  final Map<String, String> headers = {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  };
+
+   final Map<String, dynamic> body = {};
+
+  final response = await http.put(
+      Uri.parse("${AppUrl.baseUrl}/friend-request/$id/decline"),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+     fetchFriendRequestStatus();
+
+    print("res");
+    print(response.statusCode);
+
 }
 
-void acceptFriendRequest() {
-  // Implement API call to accept friend request
+void acceptFriendRequest() async{
+  String token =  await UserPreferences().getToken();
+
+  final Map<String, String> headers = {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  };
+
+   final Map<String, dynamic> body = {};
+
+  final response = await http.put(
+      Uri.parse(AppUrl.baseUrl + "/friend-request/$id/accept"),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+     fetchFriendRequestStatus();
+
 }
 
 void declineFriendRequest() {
   // Implement API call to decline friend request
 }
+
+}
+ // Function to build friend request button based on friendRequestStatus

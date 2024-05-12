@@ -18,7 +18,7 @@ class AddPostScreen extends StatefulWidget {
 
 class _AddPostScreenState extends State<AddPostScreen> {
   TextEditingController descriptionController = TextEditingController();
-  String imageUrl = '';
+  String? imageUrl;
   int? selectedCategoryId; 
   int? selectedHobbyId; 
   double? latitude;
@@ -163,7 +163,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         Uri.parse('https://localhost:7169/Post'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer '  + token,
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'description': descriptionController.text,
@@ -189,6 +189,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
         MaterialPageRoute(builder: (context) => Feed()),
       );
       } else {
+        print(response.body);
+        print(response.statusCode);
         print('Failed to create post: ${response.body}');
       }
     } catch (e) {
@@ -223,9 +225,9 @@ Widget build(BuildContext context) {
             child: Text('Pick Image'),
           ),
           SizedBox(height: 16.0),
-          imageUrl.isNotEmpty
+          imageUrl != null
               ? Image.memory(
-                  base64Decode(imageUrl),
+                  base64Decode(imageUrl.toString()),
                   height: 100.0,
                   fit: BoxFit.cover,
                 )

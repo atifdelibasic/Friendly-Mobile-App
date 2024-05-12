@@ -56,9 +56,11 @@ class _RegisterState extends State<Register> {
 
        try {
         auth.register(_email, _password, _firstName, _lastName).then((response) {
+           if (!mounted) return;
   setState(() {
     _isSubmitting = false;
   });
+
   if (response['isSuccess']) {
     showDialog(
       context: context,
@@ -78,6 +80,7 @@ class _RegisterState extends State<Register> {
       },
     );
     form.reset();
+
   } else {
     // Display errors in a pop-up modal
     showDialog(

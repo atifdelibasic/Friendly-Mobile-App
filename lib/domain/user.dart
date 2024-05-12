@@ -1,4 +1,6 @@
 
+import 'hobby.dart';
+
 class User {
   int id;
   String firstName;
@@ -8,6 +10,8 @@ class User {
   String? fullName;
   String profileImage;
   String description;
+  List<Hobby>? hobbies;
+  String? birthDate;
 
   User({
     required this.id,
@@ -17,6 +21,8 @@ class User {
     required this.token,
     required this.profileImage,
     required this.description,
+    this.birthDate,
+    this.hobbies,
     this.fullName,
   });
 
@@ -24,9 +30,16 @@ class User {
     String firstName = responseData['firstName'] ?? "";
     String lastName = responseData['lastName'] ?? "";
 
-      String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=$firstName $lastName&size=300';
+      String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
     if(responseData['profileImageUrl'] != null) {
       profileImageUrl = 'https://localhost:7169/images/' + responseData['profileImageUrl'] as String;
+    }
+
+    List<Hobby>? hobbiesList;
+    if (responseData['hobbies'] != null) {
+      hobbiesList = (responseData['hobbies'] as List)
+          .map((hobbyJson) => Hobby.fromJson(hobbyJson))
+          .toList();
     }
 
     return User(
@@ -36,8 +49,10 @@ class User {
       email: responseData['email'] ?? "" ,
       token: responseData['token'] ?? "" ,
       fullName: "$firstName $lastName",
-      profileImage: profileImageUrl,
-      description: responseData['description'] ?? ""
+      profileImage: 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300',
+      description: responseData['description'] ?? "",
+      hobbies: hobbiesList,
+      birthDate: responseData["birthDate"],
     );
   }
 }

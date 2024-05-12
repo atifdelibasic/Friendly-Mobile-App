@@ -7,7 +7,6 @@ import 'package:friendly_mobile_app/utility/validation_messages.dart';
 import 'package:friendly_mobile_app/domain/user.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:friendly_mobile_app/utility/shared_preference.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -21,6 +20,7 @@ class _LoginState extends State<Login> {
   String? _password = "";
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +32,21 @@ class _LoginState extends State<Login> {
       if (form!.validate()) {
         form.save();
 
+          setState(() {
+          _isSubmitting = true;
+        });
+
         final Future<Map<String, dynamic>> response =
             auth.login(_email, _password);
+
         response.then((response) {
+           try {
           if (response['status']) {
             User user = response['user'];
             Provider.of<UserProvider>(context, listen: false).setUser(user);
-            Future<User> getUserData() => UserPreferences().getUser();
+               setState(() {
+          _isSubmitting = false;
+        });
 
             Navigator.pushReplacementNamed(context, '/feed');
           } else {
@@ -49,7 +57,18 @@ class _LoginState extends State<Login> {
                 duration: Duration(seconds: 5),
               ),
             );
+
+                setState(() {
+                _isSubmitting = false;
+        });
           }
+           } catch (e) {
+    // Handle any potential errors here
+    print('Error occurred: $e');
+    setState(() {
+      _isSubmitting = false;
+    });
+  }
         });
       }
     }
@@ -126,7 +145,7 @@ class _LoginState extends State<Login> {
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed: () {
+                        onPressed:  () {
                           setState(() {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
@@ -141,7 +160,7 @@ class _LoginState extends State<Login> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: ElevatedButton(
-                    onPressed: doLogin,
+                    onPressed: _isSubmitting? null: doLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
                       padding: EdgeInsets.all(20),

@@ -44,7 +44,7 @@ class Post {
 
     return Post(
       id: responseData['id'] ?? 0,
-      profileImage: profileImageUrl,
+      profileImage: 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300',
       username: user.fullName ?? '',
       postImage: postImage,
       description: responseData['description'] ?? '',

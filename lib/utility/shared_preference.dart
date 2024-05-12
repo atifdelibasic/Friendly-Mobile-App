@@ -11,6 +11,7 @@ class UserPreferences {
     prefs.setString('token', user.token);
     prefs.setInt('id', user.id);
     prefs.setString('profileImageUrl', user.profileImage);
+    prefs.setString('profileImageUrl', user.birthDate ?? "");
 
     return await prefs.setBool('loggedIn', true);
   }
@@ -23,6 +24,7 @@ class UserPreferences {
     String lastName = prefs.getString("lastName") ?? "";
     String token = prefs.getString("token") ?? "";
     String profileImageUrl = prefs.getString("profileImageUrl") ?? "";
+    String birthDate = prefs.getString("birthDate") ?? "";
 
     return User(
         id: id,
@@ -32,6 +34,7 @@ class UserPreferences {
         token: token,
         profileImage: profileImageUrl,
         description: "",
+        birthDate: birthDate
        );
   }
 
@@ -44,6 +47,7 @@ class UserPreferences {
     prefs.remove('firstName');
     prefs.remove('token');
     prefs.remove('profileImageUrl');
+    prefs.remove('birthDate');
 
   }
 

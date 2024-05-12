@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:friendly_mobile_app/widgets/post_card.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -21,8 +22,46 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
   bool isLoading = false;
   final controller = ScrollController();
   List<Post> _posts = [];
+    double? latitude;
+  double? longitude;
+  bool isLocationLoading = false;
+
+
+  Future<void> _getLocation() async {
+  setState(() {
+    isLocationLoading = true;
+  });
+
+  _showLoadingIndicator(context, 'Fetching Location...');
+
+  LocationPermission permission;
+  permission = await Geolocator.requestPermission();
+  
+  try {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      latitude = position.latitude;
+      longitude = position.longitude;
+      isLocationLoading = false;
+    });
+
+    _hideLoadingIndicator(context);
+
+  } catch (e) {
+    setState(() {
+      isLocationLoading = false;
+    });
+    _hideLoadingIndicator(context);
+    print('Error getting location: $e');
+  }
+}
 
 Future<void> fetch() async {
+  
+  await _getLocation();
     if (isLoading) return;
 
     const limit = 5;
@@ -31,16 +70,17 @@ Future<void> fetch() async {
       isLoading = true;
     });
 
-    Future<String> token = UserPreferences().getToken();
+    String token = await UserPreferences().getToken();
 
      final response = await http.get(
-        Uri.parse('https://localhost:7169/post/friends?limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
-        // Add any necessary headers or parameters here
+        Uri.parse('https://localhost:7169/post/nearby?longitude=${longitude}&latitude=${latitude}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
          headers: {
-          'Authorization': 'Bearer ' + token.toString(), // Include the token in the headers
+          'Authorization': 'Bearer $token', 
         },
       );
       isLoading = false;
+      print("status code");
+      print(response.statusCode);
 
        if (response.statusCode == 200) {
         final List<dynamic> responseData = json.decode(response.body);
@@ -61,8 +101,31 @@ Future<void> fetch() async {
 
         });
        } else {
+        print(response.statusCode);
         throw Exception('Failed to load data');
       }
+}
+
+void _showLoadingIndicator(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text(message),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _hideLoadingIndicator(BuildContext context) {
+  Navigator.of(context).pop();
 }
   @override
   void initState() {
@@ -154,7 +217,7 @@ Future<void> fetch() async {
       ],
     ),
   ),
-      body:_posts.isEmpty? const Center(child:CircularProgressIndicator())
+      body:_posts.isEmpty? Container()
       : RefreshIndicator(
         onRefresh: _refreshFeed,
         child: ListView.builder(

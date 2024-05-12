@@ -171,7 +171,7 @@ Future<void> fetch() async {
       ],
     ),
   ),
-      body:_posts.isEmpty? const Center(child:CircularProgressIndicator())
+      body:_posts.isEmpty? Text("No posts to show")
       : RefreshIndicator(
         onRefresh: _refreshFeed,
         child: ListView.builder(

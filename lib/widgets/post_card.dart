@@ -175,7 +175,7 @@ class _PostCardState extends State<PostCard> {
           ),
           SizedBox(height: 16.0),
           Container(
-            height: ( widget.post.postImage.isNotEmpty)
+            height: ( widget.post.postImage.isNotEmpty && widget.post.postImage != '')
                 ? 400.0
                 : 0.0,
             child: (widget.post.postImage.isNotEmpty)

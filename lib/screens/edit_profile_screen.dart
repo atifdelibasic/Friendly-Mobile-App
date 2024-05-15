@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../domain/hobby.dart';
 import '../domain/user.dart';
 import '../providers/user_provider.dart';
+import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ print(widget.user.birthDate);
       String token =  await UserPreferences().getToken();
 
       final response = await http.get(
-        Uri.parse('https://localhost:7169/hobby'),
+        Uri.parse('${AppUrl.baseUrl}/hobby'),
         headers: {
           'Authorization': 'Bearer ' + token,
         },
@@ -97,7 +98,7 @@ print(widget.user.birthDate);
       String token =  await UserPreferences().getToken();
 
       final response = await http.get(
-        Uri.parse('https://localhost:7169/User/${widget.user.id}/hobbies'),
+        Uri.parse('${AppUrl.baseUrl}/User/${widget.user.id}/hobbies'),
         headers: {
           'Authorization': 'Bearer ' + token,
         },
@@ -127,7 +128,7 @@ print(widget.user.birthDate);
         print(_selectedHobbies);
 
       final response = await http.put(
-        Uri.parse("https://localhost:7169/user/update/${widget.user.id}"),
+        Uri.parse("${AppUrl.baseUrl}/user/update/${widget.user.id}"),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

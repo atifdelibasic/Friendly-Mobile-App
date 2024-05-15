@@ -1,3 +1,5 @@
+import '../utility/app_url.dart';
+
 class Like {
   final int id;
   final int postId;
@@ -21,7 +23,7 @@ class Like {
     if(profileImageUrl == "") {
      profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
     } else {
-      profileImageUrl = "https://localhost:7169/images/" + profileImageUrl;
+      profileImageUrl = "${AppUrl.baseUrl}/images/" + profileImageUrl;
     }
     
     print(profileImageUrl);

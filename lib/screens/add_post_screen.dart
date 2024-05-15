@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
 
 
@@ -39,7 +40,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     String token =  await UserPreferences().getToken();
 
       final response = await http.get(
-        Uri.parse('https://localhost:7169/HobbyCategory'),
+        Uri.parse('${AppUrl.baseUrl}/HobbyCategory'),
         headers: {
           'Authorization': 'Bearer ' + token ,
         },
@@ -71,7 +72,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     String token =  await UserPreferences().getToken();
 
       final response = await http.get(
-        Uri.parse('https://localhost:7169/hobby'),
+        Uri.parse('${AppUrl.baseUrl}/hobby'),
         headers: {
           'Authorization': 'Bearer ' + token,
         },
@@ -160,7 +161,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     String token =  await UserPreferences().getToken();
 
       final response = await http.post(
-        Uri.parse('https://localhost:7169/Post'),
+        Uri.parse('${AppUrl.baseUrl}/Post'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',

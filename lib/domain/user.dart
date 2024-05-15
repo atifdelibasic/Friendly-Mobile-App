@@ -1,4 +1,5 @@
 
+import '../utility/app_url.dart';
 import 'hobby.dart';
 
 class User {
@@ -32,7 +33,7 @@ class User {
 
       String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
     if(responseData['profileImageUrl'] != null) {
-      profileImageUrl = 'https://localhost:7169/images/' + responseData['profileImageUrl'] as String;
+      profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['profileImageUrl'] as String;
     }
 
     List<Hobby>? hobbiesList;

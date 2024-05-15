@@ -1,5 +1,7 @@
 import 'package:friendly_mobile_app/domain/user.dart';
 
+import '../utility/app_url.dart';
+
 class Post {
   final int id;
   final String profileImage;
@@ -34,12 +36,12 @@ class Post {
 
     String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=${user.fullName}&size=300';
     if(responseData['user']['profileImageUrl'] != null) {
-      profileImageUrl = 'https://localhost:7169/images/' + responseData['user']['profileImageUrl'] as String;
+      profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['user']['profileImageUrl'] as String;
     }
 
     String postImage = "";
     if(responseData['imagePath'] != null) {
-     postImage = "https://localhost:7169/images/" + responseData['imagePath'];
+     postImage = "${AppUrl.baseUrl}/images/" + responseData['imagePath'];
     }
 
     return Post(

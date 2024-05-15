@@ -33,7 +33,7 @@ class _PostCardState extends State<PostCard> {
     String token =  await UserPreferences().getToken();
 
    final response = await http.delete(
-        Uri.parse('https://localhost:7169/Post/${widget.post.id}'),
+        Uri.parse('${AppUrl.baseUrl}/Post/${widget.post.id}'),
         headers: {
           'Authorization': 'Bearer $token',
         },

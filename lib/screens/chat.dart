@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../domain/user.dart';
 import '../providers/user_provider.dart';
 import '../services/signalr_service.dart';
+import '../utility/app_url.dart';
 
 class ChatScreen extends StatefulWidget {
   final int recipientId;
@@ -29,7 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void initializeToken() async {
     var token = await UserPreferences().getToken();
-    _signalRService.connect('https://localhost:7169/example?recipient_id=${widget.recipientId}', token);
+    _signalRService.connect('${AppUrl.baseUrl}/example?recipient_id=${widget.recipientId}', token);
 
     // Set up the message listener
     _signalRService.onReceiveMessage((message, isMe) {

@@ -4,6 +4,7 @@ import 'package:friendly_mobile_app/screens/feed.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
 
 class EditPostScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     String token =  await UserPreferences().getToken();
 
       final response = await http.put(
-        Uri.parse('https://localhost:7169/Post/' + widget.postId.toString()),
+        Uri.parse('${AppUrl.baseUrl}/Post/' + widget.postId.toString()),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization':

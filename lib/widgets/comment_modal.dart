@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import '../domain/comment.dart';
+import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
 import '../utility/time.dart';
 import 'like_modal.dart';
@@ -51,7 +52,7 @@ class _CommentModalState extends State<CommentModal> {
 
     // Simulating a delay to show loading indicator
      final response = await http.get(
-        Uri.parse('https://localhost:7169/Comment/cursor?postId=${widget.postId}&limit=$limit${comments.isNotEmpty ? '&cursor=${comments.last.id}' : ''}'),
+        Uri.parse('${AppUrl.baseUrl}/Comment/cursor?postId=${widget.postId}&limit=$limit${comments.isNotEmpty ? '&cursor=${comments.last.id}' : ''}'),
          headers: {
           'Authorization': 'Bearer ' + token, // Include the token in the headers
         },
@@ -83,7 +84,7 @@ class _CommentModalState extends State<CommentModal> {
 
     String token =  await UserPreferences().getToken();
      final response = await http.post(
-        Uri.parse('https://localhost:7169/Comment/'),
+        Uri.parse('${AppUrl.baseUrl}/Comment/'),
          headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token', 
@@ -163,7 +164,7 @@ class _CommentModalState extends State<CommentModal> {
       if (index < comments.length) {
         return ListTile(
           leading: CircleAvatar(
-            backgroundImage: NetworkImage("https://localhost:7169/images/" + comments[index].profileImageUrl),
+            backgroundImage: NetworkImage("${AppUrl.baseUrl}/images/" + comments[index].profileImageUrl),
           ),
           title: Text(comments[index].text, style: TextStyle(fontSize: 14)),
           subtitle: Text(

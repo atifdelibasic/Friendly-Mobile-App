@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import '../domain/like.dart';
+import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
 
 class LikesModal extends StatefulWidget {
@@ -43,7 +44,7 @@ class _LikesModalState extends State<LikesModal> {
     String token =  await UserPreferences().getToken();
 
      final response = await http.get(
-        Uri.parse('https://localhost:7169/like?postId=${widget.postId}&limit=$limit${likes.isNotEmpty ? '&cursor=${likes.last.id}' : ''}'),
+        Uri.parse('${AppUrl.baseUrl}/like?postId=${widget.postId}&limit=$limit${likes.isNotEmpty ? '&cursor=${likes.last.id}' : ''}'),
          headers: {
           'Authorization': 'Bearer ' + token, // Include the token in the headers
         },

@@ -36,7 +36,7 @@ class __UserProfilePageState extends State<UserProfilePage> {
 
   void fetchHobbies() async {
      String token =  await UserPreferences().getToken();
-    final uri = 'https://localhost:7169/User/${widget.user.id}/hobbies';
+    final uri = '${AppUrl.baseUrl}/User/${widget.user.id}/hobbies';
      final response = await http.get(
         Uri.parse(uri),
          headers: {
@@ -64,7 +64,7 @@ class __UserProfilePageState extends State<UserProfilePage> {
     try {
       String token = await UserPreferences().getToken();
       final response = await http.get(
-        Uri.parse("https://localhost:7169/Profiles/${widget.user.id}/friendship-status"),
+        Uri.parse("${AppUrl.baseUrl}/Profiles/${widget.user.id}/friendship-status"),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -113,7 +113,7 @@ Future<void> fetch() async {
     });
 
     String token =  await UserPreferences().getToken();
-    final uri = 'https://localhost:7169/Post/user?UserId=${widget.user.id}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}';
+    final uri = '${AppUrl.baseUrl}/Post/user?UserId=${widget.user.id}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}';
      final response = await http.get(
         Uri.parse(uri),
          headers: {

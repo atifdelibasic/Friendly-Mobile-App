@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../domain/post.dart';
 import '../domain/user.dart';
+import '../utility/app_url.dart';
 import 'add_post_screen.dart';
 
 class Feed extends StatefulWidget {
@@ -35,7 +36,7 @@ Future<void> fetch() async {
     String token =  await UserPreferences().getToken();
 
      final response = await http.get(
-        Uri.parse('https://localhost:7169/post/friends?limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
+        Uri.parse('${AppUrl.baseUrl}/post/friends?limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
          headers: {
           'Authorization': 'Bearer $token',
         },
@@ -171,7 +172,7 @@ Future<void> fetch() async {
       ],
     ),
   ),
-      body:_posts.isEmpty? Text("No posts to show")
+      body:_posts.isEmpty? Text("No posts to show.")
       : RefreshIndicator(
         onRefresh: _refreshFeed,
         child: ListView.builder(
@@ -244,7 +245,7 @@ class CustomSearchDelegate extends SearchDelegate<Future<Widget>?> {
     String token =  await UserPreferences().getToken();
     
      final response = await http.get(
-        Uri.parse('https://localhost:7169/User/cursor?limit=99&text=${query.toLowerCase()}'),
+        Uri.parse('${AppUrl.baseUrl}/User/cursor?limit=99&text=${query.toLowerCase()}'),
          headers: {
           'Authorization': 'Bearer $token',
         },

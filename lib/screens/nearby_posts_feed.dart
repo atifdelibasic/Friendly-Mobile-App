@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../domain/post.dart';
+import '../utility/app_url.dart';
 import 'add_post_screen.dart';
 import 'feed.dart';
 
@@ -73,7 +74,7 @@ Future<void> fetch() async {
     String token = await UserPreferences().getToken();
 
      final response = await http.get(
-        Uri.parse('https://localhost:7169/post/nearby?longitude=${longitude}&latitude=${latitude}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
+        Uri.parse('${AppUrl.baseUrl}/post/nearby?longitude=${longitude}&latitude=${latitude}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
          headers: {
           'Authorization': 'Bearer $token', 
         },

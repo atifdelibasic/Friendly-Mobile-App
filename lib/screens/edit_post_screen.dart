@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:friendly_mobile_app/screens/feed.dart';
-import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 
 import '../utility/app_url.dart';
 import '../utility/shared_preference.dart';
+import 'feed.dart';
 
 class EditPostScreen extends StatefulWidget {
   final String description;
@@ -16,32 +16,26 @@ class EditPostScreen extends StatefulWidget {
 
   @override
   _EditPostScreenState createState() => _EditPostScreenState();
-
 }
 
 class _EditPostScreenState extends State<EditPostScreen> {
   TextEditingController descriptionController = TextEditingController();
-  String imageUrl = '';
 
-   @override
+  @override
   void initState() {
     super.initState();
-  
-      descriptionController.text = widget.description;
-    
+    descriptionController.text = widget.description;
   }
 
-  Future<void> _createPost() async {
+  Future<void> _updatePost() async {
     try {
-
-    String token =  await UserPreferences().getToken();
+      String token = await UserPreferences().getToken();
 
       final response = await http.put(
         Uri.parse('${AppUrl.baseUrl}/Post/' + widget.postId.toString()),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization':
-              'Bearer ' + token, // Replace with your actual access token
+          'Authorization': 'Bearer ' + token,
         },
         body: jsonEncode({
           'description': descriptionController.text,
@@ -49,7 +43,6 @@ class _EditPostScreenState extends State<EditPostScreen> {
       );
 
       if (response.statusCode == 200) {
-
         Fluttertoast.showToast(
           msg: 'Post updated successfully!',
           toastLength: Toast.LENGTH_SHORT,
@@ -61,64 +54,61 @@ class _EditPostScreenState extends State<EditPostScreen> {
           context,
           MaterialPageRoute(builder: (context) => Feed()),
         );
-
       } else {
-        print('Failed to create post: ${response.body}');
+        print('Failed to update post: ${response.body}');
       }
     } catch (e) {
-      print('Error creating post: $e');
+      print('Error updating post: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-  bool isButtonEnabled = descriptionController.text.isNotEmpty;
+    bool isButtonEnabled = descriptionController.text.isNotEmpty;
 
-  return Scaffold(
-    resizeToAvoidBottomInset: false,
-    appBar: AppBar(
-      title: Text('Update Post'),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: descriptionController,
-            onChanged: (value) {
-              setState(() {
-                // Update the state when the description changes
-              });
-            },
-            decoration: InputDecoration(
-              labelText: 'Description',
-              errorText: descriptionController.text.isEmpty
-                  ? 'Description is required'
-                  : null,
-            ),
-          ),
-          SizedBox(height: 16.0),
-          // Display image if imagePath is not empty
-          if (widget.imagePath != null && widget.imagePath.isNotEmpty)
-            Image.network(
-              widget.imagePath,
-              height: 200, // Set the desired height
-              fit: BoxFit.cover,
-            ),
-          SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: isButtonEnabled
-                ? () {
-                    _createPost();
-                  }
-                : null,
-            child: Text('Update post'),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.deepPurple,
+        title: Text('Edit Post'),
       ),
-    ),
-  );
-}
-
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              controller: descriptionController,
+              onChanged: (value) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: 'Description',
+                hintText: 'Enter your description',
+                errorText: descriptionController.text.isEmpty ? 'Description is required' : null,
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+            ),
+            SizedBox(height: 16.0),
+            if (widget.imagePath != null && widget.imagePath.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Image.network(
+                  widget.imagePath,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: isButtonEnabled ? _updatePost : null,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.0),
+                child: Text('Update Post'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

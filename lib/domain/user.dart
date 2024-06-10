@@ -1,4 +1,3 @@
-
 import '../utility/app_url.dart';
 import 'hobby.dart';
 
@@ -31,9 +30,14 @@ class User {
     String firstName = responseData['firstName'] ?? "";
     String lastName = responseData['lastName'] ?? "";
 
-      String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
-    if(responseData['profileImageUrl'] != null) {
-      profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['profileImageUrl'] as String;
+    String profileImageUrl =
+        'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
+    if (responseData['profileImageUrl'] != null &&
+        responseData['profileImageUrl'] != "") {
+      print("ima profilnu");
+      profileImageUrl =
+          '${AppUrl.baseUrl}/images/' + responseData['profileImageUrl'];
+      print("evo ga " + profileImageUrl);
     }
 
     List<Hobby>? hobbiesList;
@@ -47,10 +51,10 @@ class User {
       id: responseData['id'] ?? 0,
       firstName: responseData['firstName'] ?? "",
       lastName: responseData['lastName'] ?? "",
-      email: responseData['email'] ?? "" ,
-      token: responseData['token'] ?? "" ,
+      email: responseData['email'] ?? "",
+      token: responseData['token'] ?? "",
       fullName: "$firstName $lastName",
-      profileImage: 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300',
+      profileImage: profileImageUrl,
       description: responseData['description'] ?? "",
       hobbies: hobbiesList,
       birthDate: responseData["birthDate"],

@@ -35,8 +35,9 @@ class Post {
     final user = User.fromJson(responseData['user']);
 
     String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=${user.fullName}&size=300';
-    if(responseData['user']['profileImageUrl'] != null) {
-      profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['user']['profileImageUrl'] as String;
+    if(responseData['user']['profileImageUrl'] != null && responseData['user']['profileImageUrl'] != "") {
+      print("ima nesto" );
+      profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['user']['profileImageUrl'];
     }
 
     String postImage = "";
@@ -46,7 +47,7 @@ class Post {
 
     return Post(
       id: responseData['id'] ?? 0,
-      profileImage: 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300',
+      profileImage: profileImageUrl,
       username: user.fullName ?? '',
       postImage: postImage,
       description: responseData['description'] ?? '',

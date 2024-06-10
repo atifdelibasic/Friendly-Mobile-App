@@ -159,6 +159,8 @@ Future<void> fetch() async {
     });
   }
 
+ 
+
   Future<void> _refreshFeed() async {
    
     setState(() {
@@ -169,6 +171,7 @@ Future<void> fetch() async {
 
     fetch();
     fetchFriendRequestStatus();
+    fetchHobbies();
   }
 
   void _navigateToEditProfile() {
@@ -188,6 +191,7 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
+      backgroundColor: Colors.deepPurple,
   title: Text('User Profile'),
   leading: IconButton(
     icon: Icon(Icons.arrow_back),

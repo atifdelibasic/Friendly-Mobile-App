@@ -43,6 +43,7 @@ class _LoginState extends State<Login> {
            try {
           if (response['status']) {
             User user = response['user'];
+            print("evo ti user " + user.profileImage.toString());
             Provider.of<UserProvider>(context, listen: false).setUser(user);
                setState(() {
           _isSubmitting = false;

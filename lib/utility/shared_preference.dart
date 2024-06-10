@@ -4,14 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserPreferences {
   Future<bool> saveUser(User user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    print("token " + user.token);
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
     prefs.setString('email', user.email);
     prefs.setString('token', user.token);
     prefs.setInt('id', user.id);
     prefs.setString('profileImageUrl', user.profileImage);
-    prefs.setString('profileImageUrl', user.birthDate ?? "");
+    prefs.setString('birthDate', user.birthDate ?? "");
 
     return await prefs.setBool('loggedIn', true);
   }

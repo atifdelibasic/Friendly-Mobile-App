@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:friendly_mobile_app/report_post_dialog.dart';
 import 'package:friendly_mobile_app/screens/edit_post_screen.dart';
 import 'package:friendly_mobile_app/screens/user_profile.dart';
 import 'package:http/http.dart' as http;
@@ -41,8 +44,26 @@ class _PostCardState extends State<PostCard> {
 
       if(response.statusCode == 200) {
         widget.onDelete(widget.post.id);
+      } else {
+        widget.onDelete(widget.post.id);
       }
+
+       Fluttertoast.showToast(
+          msg: 'Post deleted successfully!',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
   }
+   void _showReportDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return ReportPostDialog(postId: widget.post.id,);
+    },
+  );
+}
 @override
   Widget build(BuildContext context) {
     Color likeIconColor = widget.post.isLikedByUser ? Colors.blue : Colors.grey;
@@ -54,13 +75,6 @@ class _PostCardState extends State<PostCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(0.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 6.0,
-            offset: Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,56 +102,110 @@ class _PostCardState extends State<PostCard> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.post.username,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
+                        Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: widget.post.username,
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black, // Adjust the color as needed
+                              ),
+                            ),
+                            if (user?.id == widget.post.userId)
+                              TextSpan(
+                                text: " (you)",
+                                style: TextStyle(
+                                  fontSize: 12.0, // Adjust the font size as needed
+                                  color: Colors.grey, // Adjust the color as needed
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                       SizedBox(height: 4.0),
-                      Text(
-                        calculateTimeAgo(widget.post.dateCreated),
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12.0,
-                        ),
-                      ),
+                     Row(
+  children: [
+    Icon(
+      Icons.public,
+      color: Colors.grey,
+      size: 16.0, // Adjust the size of the icon as needed
+    ),
+    SizedBox(width: 4), // Adjust the spacing between the icon and text as needed
+    Text(
+      calculateTimeAgo(widget.post.dateCreated),
+      style: TextStyle(
+        color: Colors.grey,
+        fontSize: 12.0,
+      ),
+    ),
+  ],
+),
                     ],
                   ),
                   Expanded(
                 child: Align(
-                  alignment: Alignment.topRight,
-                  child: user?.id == widget.post.userId ? PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        // Handle edit post
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditPostScreen(
-                              description: widget.post.description,
-                              postId: widget.post.id,
-                              imagePath: widget.post.postImage,
-                            ),
-                          ),
-                        );
-                      } else if (value == 'delete') {
-                        _test();
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                      const PopupMenuItem<String>(
-                        value: 'edit',
-                        child: Text('Edit'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'delete',
-                        child: Text('Delete'),
-                      ),
-                    ],
-                  ) : Container(),
-                ),
+  alignment: Alignment.topRight,
+  child: PopupMenuButton<String>(
+    onSelected: (value) {
+      if (value == 'edit') {
+        // Handle edit post
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditPostScreen(
+              description: widget.post.description,
+              postId: widget.post.id,
+              imagePath: widget.post.postImage,
+            ),
+          ),
+        );
+      } else if (value == 'delete') {
+        _test();
+      } else if (value == 'report') {
+        _showReportDialog(context);
+      }
+    },
+    itemBuilder: (BuildContext context) {
+      List<PopupMenuEntry<String>> menuItems = [];
+      
+      if (user?.id == widget.post.userId) {
+        menuItems.addAll([
+          PopupMenuItem<String>(
+            value: 'edit',
+            child: ListTile(
+              title: Text('Edit'),
+              trailing: Icon(Icons.edit, color: Colors.blue),
+            ),
+          ),
+          PopupMenuItem<String>(
+            value: 'delete',
+            child: ListTile(
+              title: Text('Delete'),
+              trailing: Icon(Icons.delete, color: Colors.red),
+            ),
+          ),
+        ]);
+      } else {
+        menuItems.add(
+          PopupMenuItem<String>(
+            value: 'report',
+            child: ListTile(
+              title: Text('Report'),
+              trailing: Icon(Icons.report, color: Colors.orange),
+            ),
+          ),
+        );
+      }
+
+      return menuItems;
+    },
+    icon: Icon(Icons.more_vert),
+  ),
+),
+
+
               ),
                 ],
               ),
@@ -223,8 +291,9 @@ class _PostCardState extends State<PostCard> {
                     });
                   },
                   child: Icon(
-                    Icons.thumb_up_alt_outlined,
+                   FeatherIcons.thumbsUp,
                     color: likeIconColor,
+                    size: 20,
                   ),
                 ),
                 SizedBox(width: 8.0),
@@ -251,8 +320,9 @@ class _PostCardState extends State<PostCard> {
                     );
                   },
                   child: Icon(
-                    Icons.mode_comment_outlined,
+                    FeatherIcons.messageSquare,
                     color: Colors.grey,
+                    size: 20,
                   ),
                 ),
                 SizedBox(width: 8.0),

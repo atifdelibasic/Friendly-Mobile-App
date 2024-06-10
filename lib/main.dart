@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/providers/auth_provider.dart';
 import 'package:friendly_mobile_app/providers/user_provider.dart';
+import 'package:friendly_mobile_app/screens/nearby_posts_feed.dart';
+import 'package:friendly_mobile_app/screens/requests.dart';
 import 'domain/user.dart';
 import 'screens/login.dart';
 import 'screens/register.dart';
@@ -31,38 +33,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder(
-        future: getUserData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+        home: FutureBuilder(
+            future: getUserData(),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return CircularProgressIndicator();
+                default:
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.error}');
+                  else if (snapshot.data?.token == "")
+                    return Login();
+                  else
+                  print("testiranje");
+                  print("data " + snapshot.data!.profileImage.toString());
 
-            if (snapshot.data?.token == "") {
-              print("idi na login");
-              return Login();
-            } else {
-              print("idi ovdje breee");
-              print(snapshot.data?.token);
-              print(snapshot.data);
+                    Provider.of<UserProvider>(context).setUser(snapshot.data);
+                    return Feed();
 
-              // If setUser is asynchronous, you should use Future.microtask
-              Future.microtask(() {
-                userProvider.setUser(snapshot.data);
-              });
-
-              return Feed();
-            }
-          }
-        },
-      ),
+              }
+            }),
       routes: {
         '/login': (context) => Login(),
         '/register': (context) => Register(),
         '/feed': (context) => Feed(),
+        '/nearby': (context) => NearbyPostsFeed(),
+        '/requests': (context) => RequestsPage(),
       },
     );
   }

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_mobile_app/screens/placeholders.dart';
+import 'package:friendly_mobile_app/screens/user_profile.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:friendly_mobile_app/widgets/post_card.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import '../domain/post.dart';
+import '../providers/user_provider.dart';
 import '../utility/app_url.dart';
+import '../widgets/bottom_navigation_bar.dart';
 import 'add_post_screen.dart';
 import 'feed.dart';
 
@@ -21,48 +27,91 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
   bool hasMore = true;
   bool test = false;
   bool isLoading = false;
+  bool locationFetched = false;
   final controller = ScrollController();
-  List<Post> _posts = [];
+   List<Post> _posts = [];
     double? latitude;
   double? longitude;
   bool isLocationLoading = false;
+   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+
+    @override
+  void initState() {
+    super.initState();
+    // fetch();
+
+    controller.addListener(() {
+      if(controller.position.maxScrollExtent == controller.offset) {
+        fetch();
+       }
+    });
+  }
+
+    @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Fetch location here
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeLocationAndFetch();
+    });
+
+  }
+
+  Future<void> _initializeLocationAndFetch() async {
+    if(!locationFetched) {
+  _showLoadingIndicator(context, 'Fetching Location...');
+    await _getLocation();
+    await fetch();
+    Navigator.pop(context); 
+    locationFetched = true;
+    }
+
+  }
 
 
   Future<void> _getLocation() async {
-  setState(() {
-    isLocationLoading = true;
-  });
+    print("get location a");
+  // setState(() {
+  //   isLocationLoading = true;
+  // });
 
-  _showLoadingIndicator(context, 'Fetching Location...');
+  // _showLoadingIndicator(context, 'Fetching Location...');
 
-  LocationPermission permission;
-  permission = await Geolocator.requestPermission();
+  LocationPermission permission = await Geolocator.requestPermission();
+   if (permission == LocationPermission.denied) {
+     permission = await _geolocatorPlatform.requestPermission();
+   }
+   print("tu samW");
   
   try {
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.medium,
     );
+
+    print(position.longitude);
+    print(position.latitude);
+
 
     setState(() {
       latitude = position.latitude;
       longitude = position.longitude;
-      isLocationLoading = false;
+      // isLocationLoading = false;
     });
 
-    _hideLoadingIndicator(context);
+    // _hideLoadingIndicator(context);
 
   } catch (e) {
     setState(() {
       isLocationLoading = false;
     });
-    _hideLoadingIndicator(context);
+   // _hideLoadingIndicator(context);
     print('Error getting location: $e');
   }
 }
 
 Future<void> fetch() async {
   
-  await _getLocation();
+  
     if (isLoading) return;
 
     const limit = 5;
@@ -70,6 +119,8 @@ Future<void> fetch() async {
     setState(() {
       isLoading = true;
     });
+
+    await Future.delayed(Duration(seconds: 2));
 
     String token = await UserPreferences().getToken();
 
@@ -89,6 +140,7 @@ Future<void> fetch() async {
         final List<Post> items = responseData.map((responseData) {
             return Post.fromJson(responseData);
           }).toList();
+          print("rezultat " + items.length.toString());
 
             setState(() {
           isLoading = false;
@@ -128,17 +180,8 @@ void _showLoadingIndicator(BuildContext context, String message) {
 void _hideLoadingIndicator(BuildContext context) {
   Navigator.of(context).pop();
 }
-  @override
-  void initState() {
-    super.initState();
-    fetch();
 
-    controller.addListener(() {
-      if(controller.position.maxScrollExtent == controller.offset) {
-        fetch();
-       }
-    });
-  }
+
 
   Future<void> _refreshFeed() async {
    
@@ -151,97 +194,147 @@ void _hideLoadingIndicator(BuildContext context) {
     fetch();
   }
 
+  void _showLogoutConfirmationDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Logout"),
+        content: Text("Are you sure you want to logout?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              UserPreferences().removeUser();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: Text("Logout"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
+    var user1 = Provider.of<UserProvider>(context, listen: true).user;
+
     return Scaffold(
      appBar: AppBar(
-        title: Text('Friendly'),
-         automaticallyImplyLeading: false,
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddPostScreen()),
-              );
+        // title: Text('Friendly'),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.deepPurple,
+        leadingWidth: 45,
+        leading:InkWell(
+          
+            onTap: () {
+               Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserProfilePage(user: user1!)),
+                      );
             },
-            child: Text('Add Post'),
+         child: SizedBox(
+          height: 100,
+          width:10,
+         child: Padding(
+      padding: EdgeInsets.only(left: 10.0),  // Add padding to the left
+      child: CircleAvatar(
+        backgroundImage: NetworkImage(user1!.profileImage),
+      ),
+    ),
+  ), ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                showSearch(
+                  context: context,
+                  delegate: CustomSearchDelegate(),
+                );
+              },
+              icon: const Icon(Icons.search)),
+          // user profile
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: "logout",
+                child: const Text("Logout"),
+              ),
+              PopupMenuItem(
+                value: "feedback",
+                child: const Text("Feedback"),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == "logout") {
+                _showLogoutConfirmationDialog(context);
+              }
+            },
           ),
         ],
       ),
-    bottomNavigationBar: BottomAppBar(
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                   Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Feed()),
-                );
-              },
-            ),
-            Text('Home'),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(Icons.location_on),
-              onPressed: () {
-                   Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => NearbyPostsFeed()),
-                );
-              },
-            ),
-            Text('Nearby'),
-          ],
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(Icons.person_add),
-              onPressed: () {
-                // Add your friend requests icon onPressed logic here
-              },
-            ),
-            Text('Requests'),
-          ],
-        ),
-      ],
-    ),
-  ),
-      body:_posts.isEmpty? Container()
-      : RefreshIndicator(
-        onRefresh: _refreshFeed,
-        child: ListView.builder(
-          itemCount: _posts.length + 1,
-          controller: controller,
-          itemBuilder: (context, index) {
-            if(index < _posts.length ) {
-              return PostCard(
-                post: _posts[index],
-                onDelete: (postId) {
-                   setState(() {
-                    _posts.removeWhere((post) => post.id == postId);
-                  });
-                },
-              );} else {
-                return  Padding(
-                  padding: EdgeInsets.symmetric(vertical:32),
-                  child: Center(child: hasMore?  CircularProgressIndicator() : Text('No more data to load')),
-                );
-              }
-            }
-        ),
+    bottomNavigationBar: BottomNavBar(
+        index: 2,
+        context: context,
       ),
+      body: _posts.isEmpty && isLoading
+          ? Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              enabled: true,
+              child: const SingleChildScrollView(
+                physics: NeverScrollableScrollPhysics(),
+                     child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      SizedBox(height: 16.0),
+                      ContentPlaceholder(
+                        lineType: ContentLineType.twoLines,
+                      ),
+                      SizedBox(height: 16.0),
+                      ContentPlaceholder(
+                        lineType: ContentLineType.twoLines,
+                      ),
+                      ContentPlaceholder(
+                        lineType: ContentLineType.twoLines,
+                      ),
+                    ]),
+              ))
+          : _posts.isEmpty
+              ? Center(child: Text("No posts to show."))
+              : RefreshIndicator(
+                  onRefresh: _refreshFeed,
+                  child: ListView.builder(
+                      itemCount: _posts.length + 1,
+                      controller: controller,
+                      itemBuilder: (context, index) {
+                        if (index < _posts.length) {
+                          return PostCard(
+                            post: _posts[index],
+                            onDelete: (postId) {
+                              setState(() {
+                                _posts.removeWhere((post) => post.id == postId);
+                              });
+                            },
+                          );
+                        } else {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32),
+                            child: Center(
+                                child: hasMore
+                                    ? CircularProgressIndicator()
+                                    : Text('No more data to load')),
+                          );
+                        }
+                      }),
+                ),
     );
   }
 }

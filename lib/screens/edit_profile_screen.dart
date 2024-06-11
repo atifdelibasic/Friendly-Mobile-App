@@ -27,10 +27,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _descriptionController;
-  List<Hobby> hobbies = []; 
+  List<Hobby> hobbies = [];
+  List<Hobby> recommendedHobbies = [];
+
   DateTime? _dateOfBirth;
   List<int> _selectedHobbies = [];
-  late Map<int, String> _hobbyMap = {}; 
+  late Map<int, String> _hobbyMap = {};
 
   late String imageUrl = "";
 
@@ -40,6 +42,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     _getHobbies();
     _getUserHobbies();
+    _getRecommendedHobbies();
 
     _firstNameController =
         TextEditingController(text: widget.user.firstName);
@@ -58,6 +61,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _descriptionController.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _getRecommendedHobbies() async {
+    print("get recpmmended hobbies");
+    try {
+      String token = await UserPreferences().getToken();
+      var user = await UserPreferences().getUser();
+
+      final response = await http.get(
+        Uri.parse('${AppUrl.baseUrl}/api/Recommendations/predict?userId=${user.id}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("status code " + response.statusCode.toString());
+
+     if (response.statusCode == 200) {
+      print("Received recommended hobbies");
+      List<dynamic> responseData = jsonDecode(response.body);
+
+      setState(() {
+        recommendedHobbies = responseData.map((categoryJson) => Hobby.fromJson(categoryJson)).toList();
+      });
+    } else {
+      print('Failed to fetch recommended hobbies: ${response.body}');
+    }
+  } catch (e) {
+    print('Error fetching recommended hobbies: $e');
+  }
   }
 
   Future<void> _getHobbies() async {
@@ -117,7 +149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching hobby categories: $e');
+      print('Error fetching user hobbies: $e');
     }
   }
 
@@ -145,7 +177,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (response.statusCode == 200) {
-        
         widget.user.firstName = _firstNameController.text;
         widget.user.lastName = _lastNameController.text;
         widget.user.description = _descriptionController.text;
@@ -155,15 +186,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String? imagePath = responseBody['profileImageUrl'];
         widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
-        
+
         print('Image Path: $imagePath');
 
         Provider.of<UserProvider>(context, listen: false).setUser(widget.user);
         UserPreferences().saveUser(widget.user);
 
-
-        Navigator.pop(context, true); 
-         Fluttertoast.showToast(
+        Navigator.pop(context, true);
+        Fluttertoast.showToast(
           msg: 'Profile updated successfully!',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
@@ -180,15 +210,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Handle error
     }
   }
+
   String getSelectedHobbiesTitle() {
-  if (_selectedHobbies.isEmpty) {
-    return 'Select Hobbies';
-  } else {
-    return _selectedHobbies
-        .map((id) => _hobbyMap[id]!)
-        .join(', '); // Concatenate selected hobby titles
+    if (_selectedHobbies.isEmpty) {
+      return 'Select Hobbies';
+    } else {
+      return _selectedHobbies
+          .map((id) => _hobbyMap[id]!)
+          .join(', '); // Concatenate selected hobby titles
+    }
   }
-}
+
   Future<void> _getImage() async {
     final picker = ImagePicker();
     final pickedFile =
@@ -363,69 +395,105 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Text('Select Hobbies:'),
                     SizedBox(height: 10),
                     DropdownButtonFormField<int>(
-  value: _selectedHobbies.isNotEmpty ? _selectedHobbies[0] : null,
-  onChanged: (int? value) {
-    setState(() {
-      if (value != null) {
-        _onHobbySelected(value);
-      }
-    });
-  },
-  items: hobbies.map((Hobby hobby) {
-    return DropdownMenuItem<int>(
-      value: hobby.id,
-      child: Row(
-        children: [
-          if (_selectedHobbies.contains(hobby.id))
-            Icon(Icons.check),
-          SizedBox(width: 8),
-          Text(hobby.title),
-        ],
-      ),
-    );
-  }).toList(),
-  decoration: InputDecoration(
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    labelText:"Select a hobby", // Use the method to get the selected hobbies title
-  ),
-),
-
-                    SizedBox(height: 20),
-                  Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: _selectedHobbies.map((id) {
-                  final hobby = _hobbyMap[id];
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedHobbies.remove(id);
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            hobby!,
-                            style: TextStyle(fontSize: 16),
+                      value: _selectedHobbies.isNotEmpty ? _selectedHobbies[0] : null,
+                      onChanged: (int? value) {
+                        setState(() {
+                          if (value != null) {
+                            _onHobbySelected(value);
+                          }
+                        });
+                      },
+                      items: hobbies.map((Hobby hobby) {
+                        return DropdownMenuItem<int>(
+                          value: hobby.id,
+                          child: Row(
+                            children: [
+                              if (_selectedHobbies.contains(hobby.id))
+                                Icon(Icons.check),
+                              SizedBox(width: 8),
+                              Text(hobby.title),
+                            ],
                           ),
-                          SizedBox(width: 8.0),
-                          Icon(Icons.close, size: 16),
-                        ],
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        labelText: "Select a hobby",
                       ),
                     ),
-                  );
-                  }).toList(),
-                  )
-
+                    SizedBox(height: 20),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: _selectedHobbies.map((id) {
+                        final hobby = _hobbyMap[id];
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedHobbies.remove(id);
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  hobby!,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                SizedBox(width: 8.0),
+                                Icon(Icons.close, size: 16),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Recommended Hobbies:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: recommendedHobbies.map((hobby) {
+                        return GestureDetector(
+                          onTap: () {
+                            _onHobbySelected(hobby.id);
+                          },
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(hobby.title, style: TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ],
                 ),
               ),

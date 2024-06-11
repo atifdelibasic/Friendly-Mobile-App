@@ -34,10 +34,8 @@ class User {
         'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
     if (responseData['profileImageUrl'] != null &&
         responseData['profileImageUrl'] != "") {
-      print("ima profilnu");
       profileImageUrl =
           '${AppUrl.baseUrl}/images/' + responseData['profileImageUrl'];
-      print("evo ga " + profileImageUrl);
     }
 
     List<Hobby>? hobbiesList;

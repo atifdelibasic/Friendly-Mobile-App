@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/rate_app_dialog.dart';
+import 'package:friendly_mobile_app/screens/notifications_screen.dart';
 import 'package:friendly_mobile_app/screens/user_profile.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:friendly_mobile_app/widgets/post_card.dart';
@@ -154,6 +155,14 @@ class _FeedState extends State<Feed> {
           ),
         ),
         actions: [
+          IconButton(icon: const Icon( Icons.notifications), onPressed: () {
+             Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NotificationsScreen(),
+                            ),
+                          );
+          },),
           IconButton(
               onPressed: () {
                 showSearch(
@@ -169,8 +178,8 @@ class _FeedState extends State<Feed> {
                 child: Row(
                   children: [
                     Icon(Icons.logout,
-                        color: Colors.grey), // Add icon for logout
-                    SizedBox(width: 8), // Add spacing between icon and text
+                        color: Colors.grey), 
+                    SizedBox(width: 8), 
                     Text("Logout"),
                   ],
                 ),
@@ -284,8 +293,9 @@ void _showLogoutConfirmationDialog(BuildContext context) {
             child: Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async{
               UserPreferences().removeUser();
+              await Future.delayed(Duration(seconds: 1));
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Text("Logout"),

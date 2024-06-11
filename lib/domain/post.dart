@@ -36,7 +36,6 @@ class Post {
 
     String profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=${user.fullName}&size=300';
     if(responseData['user']['profileImageUrl'] != null && responseData['user']['profileImageUrl'] != "") {
-      print("ima nesto" );
       profileImageUrl = '${AppUrl.baseUrl}/images/' + responseData['user']['profileImageUrl'];
     }
 

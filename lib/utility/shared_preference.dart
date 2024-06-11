@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserPreferences {
   Future<bool> saveUser(User user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("token " + user.token);
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
     prefs.setString('email', user.email);
@@ -49,6 +48,7 @@ class UserPreferences {
     prefs.remove('profileImageUrl');
     prefs.remove('birthDate');
 
+    print("remove user");
   }
 
   Future<String> getToken() async {

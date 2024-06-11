@@ -240,6 +240,7 @@ Widget build(BuildContext context) {
                             ),
                           ),
                         ),
+                        Text(widget.user.email),
                         Divider(),
                        Center(
                         child: Column(

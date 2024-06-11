@@ -106,25 +106,15 @@ class AuthProvider extends ChangeNotifier {
         'Content-Type': 'application/json',
       },
     );
-    print("response");
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
-      print("evo ga dvi joje");
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print("response data");
-      print(responseData);
       User authUser = User.fromJson(responseData['user']);
       authUser.token = responseData['message'];
-      print("auth user");
-      print(authUser);
       UserPreferences().saveUser(authUser);
 
       _loggedInStatus = Status.LoggedIn;
-      print("notify listeners");
       notifyListeners();
-
-      print(json.decode(response.body));
 
       result = {'status': true, 'message': 'Successful', 'user': authUser};
     } else {

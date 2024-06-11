@@ -1,3 +1,5 @@
+import 'package:friendly_mobile_app/utility/app_url.dart';
+
 class Comment {
   final int id;
   final String text;
@@ -19,8 +21,12 @@ class Comment {
     final lastName = user['lastName'] as String;
     final fullName = '$firstName $lastName';
 
-    final profileImageUrl = user['profileImageUrl'] as String? ?? 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
-
+  String profileImageUrl = user['profileImageUrl'] ?? "";
+    if(profileImageUrl == "") {
+     profileImageUrl = 'https://ui-avatars.com/api/?rounded=true&name=$firstName+$lastName';
+    } else {
+      profileImageUrl = "${AppUrl.baseUrl}/images/" + profileImageUrl;
+    }
     return Comment(
       id: json['id'] as int,
       text: json['text'] as String,

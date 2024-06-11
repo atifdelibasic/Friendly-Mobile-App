@@ -50,11 +50,10 @@ class _CommentModalState extends State<CommentModal> {
 
     String token =  await UserPreferences().getToken();
 
-    // Simulating a delay to show loading indicator
      final response = await http.get(
         Uri.parse('${AppUrl.baseUrl}/Comment/cursor?postId=${widget.postId}&limit=$limit${comments.isNotEmpty ? '&cursor=${comments.last.id}' : ''}'),
          headers: {
-          'Authorization': 'Bearer ' + token, // Include the token in the headers
+          'Authorization': 'Bearer $token', 
         },
       );
 
@@ -164,7 +163,7 @@ class _CommentModalState extends State<CommentModal> {
       if (index < comments.length) {
         return ListTile(
           leading: CircleAvatar(
-            backgroundImage: NetworkImage("${AppUrl.baseUrl}/images/" + comments[index].profileImageUrl),
+            backgroundImage: NetworkImage( comments[index].profileImageUrl),
           ),
           title: Text(comments[index].text, style: TextStyle(fontSize: 14)),
           subtitle: Text(

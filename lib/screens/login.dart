@@ -35,7 +35,7 @@ class _LoginState extends State<Login> {
           setState(() {
           _isSubmitting = true;
         });
-
+        
         final Future<Map<String, dynamic>> response =
             auth.login(_email, _password);
 
@@ -43,7 +43,6 @@ class _LoginState extends State<Login> {
            try {
           if (response['status']) {
             User user = response['user'];
-            print("evo ti user " + user.profileImage.toString());
             Provider.of<UserProvider>(context, listen: false).setUser(user);
                setState(() {
           _isSubmitting = false;

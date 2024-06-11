@@ -127,7 +127,7 @@ class _FeedState extends State<Feed> {
   @override
   Widget build(BuildContext context) {
     var user1 = Provider.of<UserProvider>(context, listen: true).user;
-    print("evo ga tu " + user1!.profileImage.toString());
+    print( user1!.profileImage.toString());
 
     return Scaffold(
       appBar: AppBar(

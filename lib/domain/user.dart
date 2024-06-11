@@ -31,7 +31,7 @@ class User {
     String lastName = responseData['lastName'] ?? "";
 
     String profileImageUrl =
-        'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
+        'https://ui-avatars.com/api/?rounded=true&name=${firstName}+${lastName}&size=300';
     if (responseData['profileImageUrl'] != null &&
         responseData['profileImageUrl'] != "") {
       profileImageUrl =

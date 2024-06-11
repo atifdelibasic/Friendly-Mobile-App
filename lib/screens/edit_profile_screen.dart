@@ -77,7 +77,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
       print("status code " + response.statusCode.toString());
 
-     if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
       print("Received recommended hobbies");
       List<dynamic> responseData = jsonDecode(response.body);
 
@@ -86,10 +86,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
     } else {
       print('Failed to fetch recommended hobbies: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching recommended hobbies: $e');
     }
-  } catch (e) {
-    print('Error fetching recommended hobbies: $e');
-  }
   }
 
   Future<void> _getHobbies() async {
@@ -185,7 +185,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String? imagePath = responseBody['profileImageUrl'];
-        widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name=ad&size=300';
+        widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name='+ widget.user.firstName + '+'+ widget.user.lastName+'&size=300';
 
         print('Image Path: $imagePath');
 
@@ -241,6 +241,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _removeImage() {
     setState(() {
       imageUrl = "";
+      widget.user.profileImage = 'https://ui-avatars.com/api/?rounded=true&name='+ widget.user.firstName + '+'+ widget.user.lastName+'&size=300';
     });
   }
 
@@ -282,6 +283,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           : NetworkImage(widget.user.profileImage)
                               as ImageProvider,
                     ),
+                    if ((imageUrl.isNotEmpty))
+                      
                     if (imageUrl.isNotEmpty)
                       Positioned(
                         bottom: 0,
@@ -302,6 +305,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
+            SizedBox(height: 10),
+               Center(child:  Text("Tap to upload an image")),
             SizedBox(height: 20),
             Card(
               elevation: 4,

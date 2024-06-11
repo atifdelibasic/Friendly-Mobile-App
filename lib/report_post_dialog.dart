@@ -71,7 +71,7 @@ class _ReportPostDialogState extends State<ReportPostDialog> {
       };
 
       var response = await http.post(
-        Uri.parse("${AppUrl.baseUrl}/report"),
+        Uri.parse("${AppUrl.baseUrl}/produce-message"),
         headers: headers,
         body: body.isNotEmpty ? jsonEncode(body) : null,
       );

@@ -64,7 +64,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _getRecommendedHobbies() async {
-    print("get recpmmended hobbies");
     try {
       String token = await UserPreferences().getToken();
       var user = await UserPreferences().getUser();
@@ -75,10 +74,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'Authorization': 'Bearer $token',
         },
       );
-      print("status code " + response.statusCode.toString());
 
       if (response.statusCode == 200) {
-      print("Received recommended hobbies");
       List<dynamic> responseData = jsonDecode(response.body);
 
       setState(() {
@@ -137,15 +134,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = jsonDecode(response.body);
-        print("response data");
-        print(responseData);
         final List<Hobby> items = responseData.map((responseData) {
           return Hobby.fromJson(responseData);
         }).toList();
 
         setState(() {
           _selectedHobbies = items.map((hobby) => hobby.id).toList();
-          print("selected hobbies" + _selectedHobbies.toString());
         });
       }
     } catch (e) {
@@ -187,7 +181,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final String? imagePath = responseBody['profileImageUrl'];
         widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name='+ widget.user.firstName + '+'+ widget.user.lastName+'&size=300';
 
-        print('Image Path: $imagePath');
 
         Provider.of<UserProvider>(context, listen: false).setUser(widget.user);
         UserPreferences().saveUser(widget.user);
@@ -204,10 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         throw Exception('Failed to update profile ' + response.statusCode.toString());
       }
     } catch (e) {
-      print("eeee");
-      print(e);
       print('Error updating profile: $e');
-      // Handle error
     }
   }
 

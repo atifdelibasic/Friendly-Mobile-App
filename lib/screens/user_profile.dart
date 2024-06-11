@@ -60,7 +60,6 @@ class __UserProfilePageState extends State<UserProfilePage> {
     setState(() {
       isLoadingFriendStatus = true;
     });
-    print("fetch friend requests");
     try {
       String token = await UserPreferences().getToken();
       final response = await http.get(
@@ -71,7 +70,6 @@ class __UserProfilePageState extends State<UserProfilePage> {
       );
       print(response.statusCode);
       if(response.body == "") {
-        print("izifji");
         setState(() {
         friendRequestStatus = 0;
         friendId = 0;
@@ -81,13 +79,10 @@ class __UserProfilePageState extends State<UserProfilePage> {
         return;
       }
       Map<String, dynamic> responseData = json.decode(response.body);
-     print("dkodiraj data");
     
       if (response.statusCode == 200 || response.statusCode == 204) {
         // Parse the response and extract friend request status
         setState(() {
-          print("setuj jaro");
-          print(friendRequestStatus);
       int status = responseData['status'];
          friendRequestStatus = status;
          id = responseData['id'];
@@ -132,6 +127,7 @@ Future<void> fetch() async {
             setState(() {
           isLoading = false;
           if (items.length < limit) {
+            print("length");
             hasMore = false;
           } else {
             hasMore = true;
@@ -141,6 +137,7 @@ Future<void> fetch() async {
 
         });
        } else {
+        print("response " + response.statusCode.toString());
         throw Exception('Failed to load data');
       }
 }
@@ -419,7 +416,6 @@ void sendFriendRequest() async {
 }
 
 void cancelFriendRequest() async{
-  print("camcel");
    String token =  await UserPreferences().getToken();
 
   final Map<String, String> headers = {
@@ -436,8 +432,6 @@ void cancelFriendRequest() async{
     );
      fetchFriendRequestStatus();
 
-    print("res");
-    print(response.statusCode);
 
 }
 

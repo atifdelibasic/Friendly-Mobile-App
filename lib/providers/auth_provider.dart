@@ -44,10 +44,8 @@ class AuthProvider extends ChangeNotifier {
       final response = await post(Uri.parse(AppUrl.register),
           body: json.encode(apiBodyData),
           headers: {'Content-Type': 'application/json'});
-      print("response");
 
       final responseBody = json.decode(response.body);
-      print(responseBody);
       return responseBody;
       
     } catch (e) {

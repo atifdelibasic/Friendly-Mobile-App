@@ -46,8 +46,6 @@ class MyApp extends StatelessWidget {
                   else if (snapshot.data?.token == "")
                     return Login();
                   else
-                  print("testiranje");
-                  print("data " + snapshot.data!.profileImage.toString());
 
                     Provider.of<UserProvider>(context).setUser(snapshot.data);
                     return Feed();

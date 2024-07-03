@@ -1,4 +1,5 @@
 import '../utility/app_url.dart';
+import 'city.dart';
 import 'hobby.dart';
 
 class User {
@@ -12,6 +13,8 @@ class User {
   String description;
   List<Hobby>? hobbies;
   String? birthDate;
+  int? cityId;
+  int? countryId;
 
   User({
     required this.id,
@@ -24,6 +27,8 @@ class User {
     this.birthDate,
     this.hobbies,
     this.fullName,
+    this.cityId,
+    this.countryId,
   });
 
   factory User.fromJson(Map<String, dynamic> responseData) {
@@ -45,6 +50,8 @@ class User {
           .toList();
     }
 
+   
+
     return User(
       id: responseData['id'] ?? 0,
       firstName: responseData['firstName'] ?? "",
@@ -56,6 +63,8 @@ class User {
       description: responseData['description'] ?? "",
       hobbies: hobbiesList,
       birthDate: responseData["birthDate"],
+      cityId: responseData["cityId"],
+      countryId: responseData["countryId"],
     );
   }
 }

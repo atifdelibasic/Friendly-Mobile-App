@@ -7,7 +7,6 @@ class UserProvider extends ChangeNotifier {
   User? get user => _user;
 
   void setUser(User? user) {
-    print("set user se poziva " + user!.profileImage);
     _user = user;
     notifyListeners();
   }

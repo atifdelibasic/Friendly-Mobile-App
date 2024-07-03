@@ -65,11 +65,9 @@ class AuthProvider extends ChangeNotifier {
     if (response.statusCode == 200) {
       var userData = responseData['data'];
 
-      // now we will create a user model
       User authUser = User.fromJson(responseData);
 
-      // now we will create shared preferences and save data
-      UserPreferences().saveUser(authUser);
+      await UserPreferences().saveUser(authUser);
 
       result = {
         'status': true,
@@ -95,7 +93,6 @@ class AuthProvider extends ChangeNotifier {
 
     _loggedInStatus = Status.Authenticating;
     notifyListeners();
-    print(AppUrl.login);
 
     Response response = await post(
       Uri.parse(AppUrl.login),
@@ -106,12 +103,19 @@ class AuthProvider extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
+      print("doso dvjesto");
       final Map<String, dynamic> responseData = json.decode(response.body);
+      print("sad sam ovdje");
       User authUser = User.fromJson(responseData['user']);
+      print("eo me tu");
       authUser.token = responseData['message'];
-      UserPreferences().saveUser(authUser);
+
+      await UserPreferences().saveUser(authUser);
+      print("sad ovdje");
+
 
       _loggedInStatus = Status.LoggedIn;
+      
       notifyListeners();
 
       result = {'status': true, 'message': 'Successful', 'user': authUser};

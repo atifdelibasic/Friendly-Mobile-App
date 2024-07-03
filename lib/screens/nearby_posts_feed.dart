@@ -181,8 +181,6 @@ void _hideLoadingIndicator(BuildContext context) {
   Navigator.of(context).pop();
 }
 
-
-
   Future<void> _refreshFeed() async {
    
     setState(() {
@@ -209,8 +207,8 @@ void _hideLoadingIndicator(BuildContext context) {
             child: Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              UserPreferences().removeUser();
+            onPressed: () async{
+              await UserPreferences().removeUser();
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Text("Logout"),

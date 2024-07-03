@@ -27,49 +27,48 @@ class _LoginState extends State<Login> {
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom != 0;
     AuthProvider auth = Provider.of<AuthProvider>(context);
 
-    doLogin() {
+    doLogin() async {
       final form = _formKey.currentState;
       if (form!.validate()) {
         form.save();
 
-          setState(() {
+        setState(() {
           _isSubmitting = true;
         });
-        
-        final Future<Map<String, dynamic>> response =
-            auth.login(_email, _password);
 
-        response.then((response) {
-           try {
+        try {
+          Map<String, dynamic> response = await auth.login(_email, _password);
+
           if (response['status']) {
             User user = response['user'];
             Provider.of<UserProvider>(context, listen: false).setUser(user);
-               setState(() {
-          _isSubmitting = false;
-        });
+            setState(() {
+              _isSubmitting = false;
+            });
 
             Navigator.pushReplacementNamed(context, '/feed');
           } else {
-            // Display error message on screen using SnackBar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(response['message']),
-                duration: Duration(seconds: 5),
+                duration: Duration(seconds: 2),
               ),
             );
-
-                setState(() {
-                _isSubmitting = false;
-        });
+            setState(() {
+              _isSubmitting = false;
+            });
           }
-           } catch (e) {
-    // Handle any potential errors here
-    print('Error occurred: $e');
-    setState(() {
-      _isSubmitting = false;
-    });
-  }
-        });
+        } catch (error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('An error occurred $error'),
+              duration: Duration(seconds: 5),
+            ),
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
       }
     }
 
@@ -145,7 +144,7 @@ class _LoginState extends State<Login> {
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed:  () {
+                        onPressed: () {
                           setState(() {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
@@ -160,7 +159,7 @@ class _LoginState extends State<Login> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: ElevatedButton(
-                    onPressed: _isSubmitting? null: doLogin,
+                    onPressed: _isSubmitting ? null : doLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
                       padding: EdgeInsets.all(20),
@@ -169,11 +168,16 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                     child: Center(
-                      child: Text(
-                        'Log In',
-                        style: GoogleFonts.montserrat(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
+                      child: _isSubmitting
+                          ? CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : Text(
+                              'Log In',
+                              style: GoogleFonts.montserrat(
+                                  fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
                     ),
                   ),
                 ),

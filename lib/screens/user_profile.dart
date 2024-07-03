@@ -141,8 +141,9 @@ Future<void> fetch() async {
         throw Exception('Failed to load data');
       }
 }
+
+
   @override
-  
   void initState() {
     super.initState();
     fetch();
@@ -155,6 +156,7 @@ Future<void> fetch() async {
        }
     });
   }
+
 
  
 
@@ -261,10 +263,10 @@ Widget build(BuildContext context) {
                       ),
                         Divider(),
                        Text(
-                              "Hobbies & intrests", // Label indicating the description section
+                              "Hobbies & intrests",
                               style: TextStyle(
-                                fontSize: 16, // Adjust the font size as needed
-                                fontWeight: FontWeight.bold, // Optionally, make the label bold
+                                fontSize: 16, 
+                                fontWeight: FontWeight.bold, 
                               ),
                             ),
 
@@ -274,9 +276,9 @@ Widget build(BuildContext context) {
   child: Center(
   child: Column(
     children: [
-      Center( // Expand to take available vertical space
+      Center( 
         child: ListView.builder(
-          shrinkWrap: true, // Ensure the inner list doesn't occupy more space than needed
+          shrinkWrap: true, 
           itemCount: hobbies.length,
           itemBuilder: (BuildContext context, int innerIndex) {
             return Center(
@@ -298,20 +300,25 @@ Widget build(BuildContext context) {
                          if(user?.id != widget.user.id) 
                          ElevatedButton(
                           onPressed: () {
-                            // Navigate to the desired screen
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => ChatScreen(recipientId: widget.user.id, recipientProfileImage: widget.user.profileImage, fullName: widget.user.fullName,)),
                             );
                           },
-                          child: Text('Start Chat'),
+                          child:Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.chat_rounded),
+                              SizedBox(width: 8), // Add some space between the icon and the text
+                              Text('Start Chat'),
+                            ],
+                          ),
                         ),
                         Divider(), 
                       ],
                     ),
                   );
                 } else if ((index <= _posts.length)) {
-                  // Display posts
                   return PostCard(
                     post: _posts[index-1],
                     onDelete: (postId) {
@@ -344,18 +351,30 @@ Widget build(BuildContext context) {
   if (friendRequestStatus == 0) {
     return ElevatedButton(
       onPressed: () {
-        // Perform action to send friend request
         sendFriendRequest();
       },
-      child: Text('Send Friend Request'),
+       child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(Icons.add_rounded),
+        SizedBox(width: 8), 
+        Text('Send friend request'),
+      ],
+    ),
     );
   } else if (friendRequestStatus == 1 && widget.user.id != friendId) {
     return ElevatedButton(
       onPressed: () {
-        // Perform action to cancel friend request
         cancelFriendRequest();
       },
-      child: Text('Cancel request'),
+      child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(Icons.cancel),
+        SizedBox(width: 8), 
+        Text('Cancel friend request'),
+      ],
+    ),
     );
   } else if (friendRequestStatus == 1 && widget.user.id == friendId) {
     return Row(
@@ -379,20 +398,35 @@ Widget build(BuildContext context) {
       ],
     );
   } else if (friendRequestStatus == 2) {
-      return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text("Friends"),
-        ElevatedButton(
-          onPressed: () {
-            cancelFriendRequest();
-          },
-          child: Text('remove friend'),
-        ),
-      ],
-    );
-  } else {
-    return SizedBox(); // Return empty widget for unsupported states
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      DropdownButton<String>(
+        value: 'Friends',
+        icon: Icon(Icons.arrow_downward),
+        onChanged: (String? newValue) {
+        },
+        items: <DropdownMenuItem<String>>[
+          DropdownMenuItem<String>(
+            value: 'Friends',
+            child: Text('Friends'),
+          ),
+          DropdownMenuItem<String>(
+            value: 'Remove Friend',
+            child: ElevatedButton(
+              onPressed: () {
+                cancelFriendRequest();
+              },
+              child: Text('Remove Friend'),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+ else {
+    return SizedBox(); 
   }
 }
 

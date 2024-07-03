@@ -3,16 +3,21 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:friendly_mobile_app/domain/city_response.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../domain/city.dart';
+import '../domain/country.dart';
+import '../domain/country_response.dart';
 import '../domain/hobby.dart';
 import '../domain/user.dart';
 import '../providers/user_provider.dart';
+import '../services/city_service.dart';
+import '../services/country_service.dart';
 import '../utility/app_url.dart';
-import '../utility/shared_preference.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final User user;
@@ -29,20 +34,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _descriptionController;
   List<Hobby> hobbies = [];
   List<Hobby> recommendedHobbies = [];
+  final CountryService _countryService = CountryService(baseUrl: 'https://api.example.com');
+  final CityService _cityService = CityService(baseUrl: 'https://api.example.com');
+
+  int count = 0;
 
   DateTime? _dateOfBirth;
   List<int> _selectedHobbies = [];
   late Map<int, String> _hobbyMap = {};
 
   late String imageUrl = "";
+  List<Country> countries = [];
+  List<City> cities = [];
+
+  int? _selectedCountryId;
+  int? _selectedCityId;
 
   @override
   void initState() {
     super.initState();
 
+   
     _getHobbies();
     _getUserHobbies();
     _getRecommendedHobbies();
+    fetchCountries();
 
     _firstNameController =
         TextEditingController(text: widget.user.firstName);
@@ -88,6 +104,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       print('Error fetching recommended hobbies: $e');
     }
   }
+
+  Future<void> fetchCities() async {
+  CityResponse response = await _cityService.fetchCities("", _selectedCountryId!);
+      setState(() {
+        cities = response.cities;
+        count = response.count;
+      });
+
+  }
+  void _onCountrySelected(int countryId) {
+  setState(() {
+    _selectedCityId = null;
+    _selectedCountryId = countryId;
+    fetchCities();
+  });
+}
+
+  Future<void> fetchCountries() async {
+
+      CountryResponse response = await _countryService.fetchCountries("", 1, 20);
+      setState(() {
+        countries = response.countries;
+        count = response.count;
+
+        _selectedCountryId = widget.user.countryId;
+        print("ev ti city id");
+        print(widget.user.cityId);
+        fetchCities();
+        _selectedCityId = widget.user.cityId;
+
+      });
+  }
+
 
   Future<void> _getHobbies() async {
     try {
@@ -166,7 +215,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'hobbyIds': _selectedHobbies,
           'birthDate': _dateOfBirth?.toIso8601String(),
           'profileImageUrl': widget.user.profileImage,
-          'cityId': null,
+          'cityId': _selectedCityId,
         }),
       );
 
@@ -176,6 +225,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         widget.user.description = _descriptionController.text;
         widget.user.birthDate = _dateOfBirth?.toIso8601String();
         widget.user.token = token;
+        widget.user.cityId = _selectedCityId;
+        widget.user.countryId = _selectedCountryId;
 
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String? imagePath = responseBody['profileImageUrl'];
@@ -183,7 +234,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 
         Provider.of<UserProvider>(context, listen: false).setUser(widget.user);
-        UserPreferences().saveUser(widget.user);
+        await UserPreferences().saveUser(widget.user);
 
         Navigator.pop(context, true);
         Fluttertoast.showToast(
@@ -274,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               as ImageProvider,
                     ),
                     if ((imageUrl.isNotEmpty))
-                      
+
                     if (imageUrl.isNotEmpty)
                       Positioned(
                         bottom: 0,
@@ -337,7 +388,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    // Date of Birth Input
                     Text('Date of Birth:'),
                     InkWell(
                       onTap: () async {
@@ -387,8 +437,97 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Text('Select Hobbies:'),
-                    SizedBox(height: 10),
+                    DropdownButtonFormField<int>(
+                      value: _selectedCountryId,
+                      onChanged: (int? value) {
+                        setState(() {
+                          if (value != null) {
+                              _onCountrySelected(value);
+                          }
+                        });
+                      },
+                      items: countries.map((Country country) {
+                        return DropdownMenuItem<int>(
+                          value: country.id,
+                          child: Row(
+                            children: [
+                              if (_selectedCountryId == country.id)
+                                Icon(Icons.check),
+                              SizedBox(width: 8),
+                              Text(country.name),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        labelText: "Country",
+                      ),
+                    ),
+                    SizedBox(height: 20,),
+                    DropdownButtonFormField<int>(
+                      value: _selectedCityId,
+                      onChanged: (int? value) {
+                        setState(() {
+                          if (value != null) {
+                              // _onCountrySelected(value);
+                              setState(() {
+                              _selectedCityId = value;
+                                
+                              });
+                          }
+                        });
+                      },
+                      items: cities.map((City city) {
+                        return DropdownMenuItem<int>(
+                          value: city.id,
+                          child: Row(
+                            children: [
+                              if (_selectedCityId == city.id)
+                                Icon(Icons.check),
+                              SizedBox(width: 8),
+                              Text(city.name),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        labelText: "City",
+                      ),
+                    ),
+                  //   DropdownButtonFormField<int>(
+                  //   value: _selectedCityId,
+                  //   onChanged: (int? value) {
+                  //     setState(() {
+                  //       _selectedCityId = value;
+                  //     });
+                  //   },
+                  //   items: cities.map((City city) {
+                  //     return DropdownMenuItem<int>(
+                  //       value: city.id,
+                  //       child: Row(
+                  //         children: [
+                  //           if (_selectedCityId == city.id)
+                  //             Icon(Icons.check),
+                  //           SizedBox(width: 8),
+                  //           Text(city.name),
+                  //         ],
+                  //       ),
+                  //     );
+                  //   }).toList(),
+                  //   decoration: InputDecoration(
+                  //     border: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(10),
+                  //     ),
+                  //     labelText: "City",
+                  //   ),
+                  // ),
+                  SizedBox(height: 20,),
                     DropdownButtonFormField<int>(
                       value: _selectedHobbies.isNotEmpty ? _selectedHobbies[0] : null,
                       onChanged: (int? value) {
@@ -415,9 +554,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        labelText: "Select a hobby",
+                        labelText: "Hobby",
                       ),
                     ),
+
                     SizedBox(height: 20),
                     Wrap(
                       spacing: 8.0,
@@ -455,6 +595,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
+
             SizedBox(height: 20),
             Card(
               elevation: 4,

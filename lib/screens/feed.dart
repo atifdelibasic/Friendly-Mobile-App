@@ -176,7 +176,7 @@ class _FeedState extends State<Feed> {
               PopupMenuItem(
                 value: "logout",
                 child: Row(
-                  children: [
+                  children: const [
                     Icon(Icons.logout,
                         color: Colors.grey), 
                     SizedBox(width: 8), 
@@ -187,10 +187,10 @@ class _FeedState extends State<Feed> {
               PopupMenuItem(
                 value: "feedback",
                 child: Row(
-                  children: [
+                  children: const [
                     Icon(Icons.feedback,
-                        color: Colors.grey), // Add icon for feedback
-                    SizedBox(width: 8), // Add spacing between icon and text
+                        color: Colors.grey), 
+                    SizedBox(width: 8), 
                     Text("Feedback"),
                   ],
                 ),
@@ -198,9 +198,9 @@ class _FeedState extends State<Feed> {
               PopupMenuItem(
                 value: "rate",
                 child: Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.grey), // Add icon for rating
-                    SizedBox(width: 8), // Add spacing between icon and text
+                  children: const [
+                    Icon(Icons.star, color: Colors.grey), 
+                    SizedBox(width: 8), 
                     Text("Rate app"),
                   ],
                 ),
@@ -294,8 +294,7 @@ void _showLogoutConfirmationDialog(BuildContext context) {
           ),
           TextButton(
             onPressed: () async{
-              UserPreferences().removeUser();
-              await Future.delayed(Duration(seconds: 1));
+              await UserPreferences().removeUser();
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Text("Logout"),

@@ -25,7 +25,6 @@ class NearbyPostsFeed extends StatefulWidget {
 }
 
 class _NearbyPostsFeed extends State<NearbyPostsFeed> {
-
   bool hasMore = true;
   bool test = false;
   bool isLoading = false;
@@ -42,49 +41,47 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
   void getUser() {
     Future.delayed(Duration.zero, () async {
       Future<User> getUserData() => UserPreferences().getUser();
-      Provider.of<UserProvider>(context, listen: false).setUser(await getUserData());
+      Provider.of<UserProvider>(context, listen: false)
+          .setUser(await getUserData());
 
       setState(() {
         loadUser = true;
       });
-
     });
   }
 
-    @override
+  @override
   void initState() {
     super.initState();
     fetch();
 
-
     controller.addListener(() {
-      if(controller.position.maxScrollExtent == controller.offset) {
+      if (controller.position.maxScrollExtent == controller.offset) {
         fetch();
-       }
+      }
     });
   }
 
-    @override
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Fetch location here
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocationAndFetch();
     });
-
   }
 
   Future<void> _initializeLocationAndFetch() async {
-    if(!locationFetched) {
-  _showLoadingIndicator(context, 'Fetching Location...');
-    await _getLocation();
-    await fetch();
-    Navigator.pop(context); 
-    locationFetched = true;
+    if (!locationFetched) {
+      _showLoadingIndicator(context, 'Fetching Location...');
+      await _getLocation();
+      await fetch();
+      Navigator.pop(context);
+      locationFetched = true;
     }
-
   }
-    void _showFeedbackDialog(BuildContext context) {
+
+  void _showFeedbackDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -104,47 +101,43 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
 
   Future<void> _getLocation() async {
     print("get location a");
-  // setState(() {
-  //   isLocationLoading = true;
-  // });
+    // setState(() {
+    //   isLocationLoading = true;
+    // });
 
-  // _showLoadingIndicator(context, 'Fetching Location...');
+    // _showLoadingIndicator(context, 'Fetching Location...');
 
-  LocationPermission permission = await Geolocator.requestPermission();
-   if (permission == LocationPermission.denied) {
-     permission = await _geolocatorPlatform.requestPermission();
-   }
-   print("tu samW");
-  
-  try {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.medium,
-    );
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await _geolocatorPlatform.requestPermission();
+    }
+    print("tu samW");
 
-    print(position.longitude);
-    print(position.latitude);
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
 
+      print(position.longitude);
+      print(position.latitude);
 
-    setState(() {
-      latitude = position.latitude;
-      longitude = position.longitude;
-      // isLocationLoading = false;
-    });
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+        // isLocationLoading = false;
+      });
 
-    // _hideLoadingIndicator(context);
-
-  } catch (e) {
-    setState(() {
-      isLocationLoading = false;
-    });
-   // _hideLoadingIndicator(context);
-    print('Error getting location: $e');
+      // _hideLoadingIndicator(context);
+    } catch (e) {
+      setState(() {
+        isLocationLoading = false;
+      });
+      // _hideLoadingIndicator(context);
+      print('Error getting location: $e');
+    }
   }
-}
 
-Future<void> fetch() async {
-  
-  
+  Future<void> fetch() async {
     if (isLoading) return;
 
     const limit = 5;
@@ -157,65 +150,64 @@ Future<void> fetch() async {
 
     String token = await UserPreferences().getToken();
 
-     final response = await http.get(
-        Uri.parse('${AppUrl.baseUrl}/post/nearby?longitude=${longitude}&latitude=${latitude}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
-         headers: {
-          'Authorization': 'Bearer $token', 
-        },
-      );
-      isLoading = false;
-      print("status code");
+    final response = await http.get(
+      Uri.parse(
+          '${AppUrl.baseUrl}/post/nearby?longitude=${longitude}&latitude=${latitude}&limit=$limit${_posts.isNotEmpty ? '&cursor=${_posts.last.id}' : ''}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    isLoading = false;
+    print("status code");
+    print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = json.decode(response.body);
+
+      final List<Post> items = responseData.map((responseData) {
+        return Post.fromJson(responseData);
+      }).toList();
+      print("rezultat " + items.length.toString());
+
+      setState(() {
+        isLoading = false;
+        if (items.length < limit) {
+          hasMore = false;
+        } else {
+          hasMore = true;
+        }
+
+        _posts.addAll(items);
+      });
+    } else {
       print(response.statusCode);
+      // throw Exception('Failed to load data');
+    }
+  }
 
-       if (response.statusCode == 200) {
-        final List<dynamic> responseData = json.decode(response.body);
+  void _showLoadingIndicator(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text(message),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-        final List<Post> items = responseData.map((responseData) {
-            return Post.fromJson(responseData);
-          }).toList();
-          print("rezultat " + items.length.toString());
-
-            setState(() {
-          isLoading = false;
-          if (items.length < limit) {
-            hasMore = false;
-          } else {
-            hasMore = true;
-          }
-
-          _posts.addAll(items);
-
-        });
-       } else {
-        print(response.statusCode);
-        throw Exception('Failed to load data');
-      }
-}
-
-void _showLoadingIndicator(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text(message),
-          ],
-        ),
-      );
-    },
-  );
-}
-
-void _hideLoadingIndicator(BuildContext context) {
-  Navigator.of(context).pop();
-}
+  void _hideLoadingIndicator(BuildContext context) {
+    Navigator.of(context).pop();
+  }
 
   Future<void> _refreshFeed() async {
-   
     setState(() {
       isLoading = false;
       hasMore = true;
@@ -226,41 +218,41 @@ void _hideLoadingIndicator(BuildContext context) {
   }
 
   void _showLogoutConfirmationDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Logout"),
-        content: Text("Are you sure you want to logout?"),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async{
-              await UserPreferences().removeUser();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-            child: Text("Logout"),
-          ),
-        ],
-      );
-    },
-  );
-}
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Logout"),
+          content: Text("Are you sure you want to logout?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await UserPreferences().removeUser();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
- void _showInfoDialog(BuildContext context) {
+  void _showInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Nearby posts"),
-content: Text(
-  "This page shows posts from users who are nearby and share the same hobbies as you. It covers a 10 km radius, but for testing purposes, it's much larger. The Haversine Formula is used for calculations. Quick info: the database seed is random, so if no posts are shown, log in to another account or create your own posts to see them here. Cheers! :D"
-),          actions: [
+          content: Text(
+              "This page shows posts from users who are nearby and share the same hobbies as you. It covers a 10 km radius, but for testing purposes, it's much larger. The Haversine Formula is used for calculations. Quick info: the database seed is random, so if no posts are shown, log in to another account or create your own posts to see them here. Cheers! :D"),
+          actions: [
             TextButton(
               child: Text("OK"),
               onPressed: () {
@@ -278,33 +270,33 @@ content: Text(
     var user1 = Provider.of<UserProvider>(context, listen: true).user;
 
     return Scaffold(
-     appBar: AppBar(
+      appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.deepPurple,
         leadingWidth: 45,
-        leading:InkWell(
-          
-            onTap: () {
-               Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UserProfilePage(user: user1!)),
-                      );
-            },
-         child: SizedBox(
-          height: 100,
-          width:10,
-         child: Padding(
-      padding: EdgeInsets.only(left: 10.0),  
-      child: 
-      user1 == null ?  CircleAvatar():
-      CircleAvatar(
-        backgroundImage: NetworkImage(user1.profileImage),
-      ),
-    ),
-  ), ),
+        leading: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => UserProfilePage(user: user1!)),
+            );
+          },
+          child: SizedBox(
+            height: 100,
+            width: 10,
+            child: Padding(
+              padding: EdgeInsets.only(left: 10.0),
+              child: user1 == null
+                  ? CircleAvatar()
+                  : CircleAvatar(
+                      backgroundImage: NetworkImage(user1.profileImage),
+                    ),
+            ),
+          ),
+        ),
         actions: [
-            IconButton(
+          IconButton(
             onPressed: () {
               _showInfoDialog(context);
             },
@@ -317,19 +309,18 @@ content: Text(
                   delegate: CustomSearchDelegate(),
                 );
               },
-          icon: const Icon(Icons.search, color: Colors.white)),
+              icon: const Icon(Icons.search, color: Colors.white)),
 
           // user profile
-         PopupMenuButton(
+          PopupMenuButton(
             icon: Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: "logout",
                 child: Row(
                   children: const [
-                    Icon(Icons.logout,
-                        color: Colors.grey), 
-                    SizedBox(width: 8), 
+                    Icon(Icons.logout, color: Colors.grey),
+                    SizedBox(width: 8),
                     Text("Logout"),
                   ],
                 ),
@@ -338,9 +329,8 @@ content: Text(
                 value: "feedback",
                 child: Row(
                   children: const [
-                    Icon(Icons.feedback,
-                        color: Colors.grey), 
-                    SizedBox(width: 8), 
+                    Icon(Icons.feedback, color: Colors.grey),
+                    SizedBox(width: 8),
                     Text("Feedback"),
                   ],
                 ),
@@ -349,8 +339,8 @@ content: Text(
                 value: "rate",
                 child: Row(
                   children: const [
-                    Icon(Icons.star, color: Colors.grey), 
-                    SizedBox(width: 8), 
+                    Icon(Icons.star, color: Colors.grey),
+                    SizedBox(width: 8),
                     Text("Rate app"),
                   ],
                 ),
@@ -368,7 +358,7 @@ content: Text(
           ),
         ],
       ),
-    bottomNavigationBar: BottomNavBar(
+      bottomNavigationBar: BottomNavBar(
         index: 2,
         context: context,
       ),
@@ -379,7 +369,7 @@ content: Text(
               enabled: true,
               child: const SingleChildScrollView(
                 physics: NeverScrollableScrollPhysics(),
-                     child: Column(
+                child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [

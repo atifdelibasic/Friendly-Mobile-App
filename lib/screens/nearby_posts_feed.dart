@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_mobile_app/feedback_dialog.dart';
+import 'package:friendly_mobile_app/rate_app_dialog.dart';
 import 'package:friendly_mobile_app/screens/placeholders.dart';
 import 'package:friendly_mobile_app/screens/user_profile.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
@@ -66,7 +68,23 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
     }
 
   }
+    void _showFeedbackDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return FeedbackDialog();
+      },
+    );
+  }
 
+  void _showRateAppDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return RateAppDialog();
+      },
+    );
+  }
 
   Future<void> _getLocation() async {
     print("get location a");
@@ -257,21 +275,49 @@ void _hideLoadingIndicator(BuildContext context) {
           icon: const Icon(Icons.search, color: Colors.white)),
 
           // user profile
-          PopupMenuButton(
-             icon: Icon(Icons.more_vert, color: Colors.white),
+         PopupMenuButton(
+            icon: Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: "logout",
-                child: const Text("Logout"),
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout,
+                        color: Colors.grey), 
+                    SizedBox(width: 8), 
+                    Text("Logout"),
+                  ],
+                ),
               ),
               PopupMenuItem(
                 value: "feedback",
-                child: const Text("Feedback"),
+                child: Row(
+                  children: const [
+                    Icon(Icons.feedback,
+                        color: Colors.grey), 
+                    SizedBox(width: 8), 
+                    Text("Feedback"),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: "rate",
+                child: Row(
+                  children: const [
+                    Icon(Icons.star, color: Colors.grey), 
+                    SizedBox(width: 8), 
+                    Text("Rate app"),
+                  ],
+                ),
               ),
             ],
             onSelected: (value) {
               if (value == "logout") {
                 _showLogoutConfirmationDialog(context);
+              } else if (value == "feedback") {
+                _showFeedbackDialog(context);
+              } else if (value == "rate") {
+                _showRateAppDialog(context);
               }
             },
           ),

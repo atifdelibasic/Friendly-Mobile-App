@@ -167,6 +167,7 @@ class _FeedState extends State<Feed> {
               },
               icon: const Icon(Icons.search, color: Colors.white)),
           PopupMenuButton(
+            icon: Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: "logout",

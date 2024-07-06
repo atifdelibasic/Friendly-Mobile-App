@@ -244,7 +244,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           textColor: Colors.white,
         );
       } else {
-        throw Exception('Failed to update profile ' + response.statusCode.toString());
+        // throw Exception('Failed to update profile ' + response.statusCode.toString());
+         Fluttertoast.showToast(
+          msg: 'First name and last name should have minimum 3 characters!',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
     } catch (e) {
       print('Error updating profile: $e');
@@ -356,7 +363,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    TextField(
+                    TextFormField(
                       controller: _firstNameController,
                       decoration: InputDecoration(
                         labelText: 'First Name',

@@ -18,7 +18,7 @@ import '../utility/app_url.dart';
 import 'placeholders.dart';
 
 class Feed extends StatefulWidget {
-  const Feed({Key? key}) : super(key: key);
+  const Feed({super.key});
   @override
   _FeedState createState() => _FeedState();
 }
@@ -39,7 +39,6 @@ class _FeedState extends State<Feed> {
     });
 
     if (initialLoad) {
-      // Add a delay for the initial load
       await Future.delayed(Duration(seconds: 1));
     }
 
@@ -81,10 +80,25 @@ class _FeedState extends State<Feed> {
     }
   }
 
+  bool loadUser = false;
+
+  void getUser() {
+    Future.delayed(Duration.zero, () async {
+      Future<User> getUserData() => UserPreferences().getUser();
+      Provider.of<UserProvider>(context, listen: false).setUser(await getUserData());
+
+      setState(() {
+        loadUser = true;
+      });
+
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     fetch(initialLoad: true);
+    getUser();
 
     controller.addListener(() {
       if (controller.position.maxScrollExtent == controller.offset) {
@@ -142,10 +156,11 @@ class _FeedState extends State<Feed> {
             height: 100,
             width: 10,
             child: Padding(
-              padding: EdgeInsets.only(left: 10.0), // Add padding to the left
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(user1!.profileImage),
-              ),
+              padding: EdgeInsets.only(left: 10.0),
+              child:   user1 == null ? CircleAvatar():
+      CircleAvatar(
+        backgroundImage: NetworkImage(user1.profileImage),
+      ),
             ),
           ),
         ),
@@ -167,7 +182,7 @@ class _FeedState extends State<Feed> {
               },
               icon: const Icon(Icons.search, color: Colors.white)),
           PopupMenuButton(
-            icon: Icon(Icons.more_vert, color: Colors.white),
+             icon: Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: "logout",

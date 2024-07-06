@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_mobile_app/domain/user.dart';
 import 'package:friendly_mobile_app/feedback_dialog.dart';
 import 'package:friendly_mobile_app/rate_app_dialog.dart';
 import 'package:friendly_mobile_app/screens/placeholders.dart';
@@ -30,16 +31,31 @@ class _NearbyPostsFeed extends State<NearbyPostsFeed> {
   bool isLoading = false;
   bool locationFetched = false;
   final controller = ScrollController();
-   List<Post> _posts = [];
-    double? latitude;
+  List<Post> _posts = [];
+  double? latitude;
   double? longitude;
   bool isLocationLoading = false;
-   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+  bool loadUser = false;
+
+  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+
+  void getUser() {
+    Future.delayed(Duration.zero, () async {
+      Future<User> getUserData() => UserPreferences().getUser();
+      Provider.of<UserProvider>(context, listen: false).setUser(await getUserData());
+
+      setState(() {
+        loadUser = true;
+      });
+
+    });
+  }
 
     @override
   void initState() {
     super.initState();
-    // fetch();
+    fetch();
+
 
     controller.addListener(() {
       if(controller.position.maxScrollExtent == controller.offset) {
@@ -236,6 +252,27 @@ void _hideLoadingIndicator(BuildContext context) {
   );
 }
 
+ void _showInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Nearby posts"),
+content: Text(
+  "This page shows posts from users who are nearby and share the same hobbies as you. It covers a 10 km radius, but for testing purposes, it's much larger. The Haversine Formula is used for calculations. Quick info: the database seed is random, so if no posts are shown, log in to another account or create your own posts to see them here. Cheers! :D"
+),          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user1 = Provider.of<UserProvider>(context, listen: true).user;
@@ -258,13 +295,21 @@ void _hideLoadingIndicator(BuildContext context) {
           height: 100,
           width:10,
          child: Padding(
-      padding: EdgeInsets.only(left: 10.0),  // Add padding to the left
-      child: CircleAvatar(
-        backgroundImage: NetworkImage(user1!.profileImage),
+      padding: EdgeInsets.only(left: 10.0),  
+      child: 
+      user1 == null ?  CircleAvatar():
+      CircleAvatar(
+        backgroundImage: NetworkImage(user1.profileImage),
       ),
     ),
   ), ),
         actions: [
+            IconButton(
+            onPressed: () {
+              _showInfoDialog(context);
+            },
+            icon: const Icon(Icons.info_outline, color: Colors.white),
+          ),
           IconButton(
               onPressed: () {
                 showSearch(

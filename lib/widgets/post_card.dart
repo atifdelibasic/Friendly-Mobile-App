@@ -67,7 +67,7 @@ class _PostCardState extends State<PostCard> {
 @override
   Widget build(BuildContext context) {
     Color likeIconColor = widget.post.isLikedByUser ? Colors.blue : Colors.grey;
-    final User? user = Provider.of<UserProvider>(context).user;
+    final User? user = Provider.of<UserProvider>(context, listen:false).user;
 
 
     return Container(

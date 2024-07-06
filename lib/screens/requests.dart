@@ -59,7 +59,7 @@ class _RequestsPageState extends State<RequestsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Requests', style: TextStyle(color: Colors.white),),
+        title: Text('Friend requests', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.deepPurple,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white,),

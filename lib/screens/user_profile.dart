@@ -184,7 +184,7 @@ Future<void> fetch() async {
  @override
 Widget build(BuildContext context) {
 
-    User? user = Provider.of<UserProvider>(context).user;
+    User? user = Provider.of<UserProvider>(context, listen: true).user;
 
   return Scaffold(
     appBar: AppBar(

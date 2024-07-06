@@ -162,6 +162,7 @@ class _ReportPostDialogState extends State<ReportPostDialog> {
                 prefixIcon: Icon(Icons.text_snippet),
               ),
             ),
+            Text("This is a rabbit mq feature. After submit rabbit mq endpoint is hit (produce message) -> rabbitmq -> console app (service) -> back to the api.")
           ],
         ),
       ),

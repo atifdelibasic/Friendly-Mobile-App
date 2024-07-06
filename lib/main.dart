@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
                     return Login();
                   else
 
-                    Provider.of<UserProvider>(context).setUser(snapshot.data);
+                    // Provider.of<UserProvider>(context).setUser(snapshot.data);
                     return Feed();
 
               }

@@ -105,11 +105,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> fetchCities() async {
+    if(_selectedCountryId != null) {
   CityResponse response = await _cityService.fetchCities("", _selectedCountryId!);
       setState(() {
         cities = response.cities;
         count = response.count;
       });
+    }
 
   }
   void _onCountrySelected(int countryId) {
@@ -255,7 +257,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } else {
       return _selectedHobbies
           .map((id) => _hobbyMap[id]!)
-          .join(', '); // Concatenate selected hobby titles
+          .join(', '); 
     }
   }
 
@@ -576,7 +578,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  hobby!,
+                                  hobby ?? "",
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 SizedBox(width: 8.0),

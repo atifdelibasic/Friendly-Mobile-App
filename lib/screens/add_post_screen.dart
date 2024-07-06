@@ -113,8 +113,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     setState(() {
       isLocationLoading = true;
     });
-    LocationPermission permission;
-    permission = await Geolocator.requestPermission();
+    LocationPermission permission = await Geolocator.requestPermission();
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -169,7 +168,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('Post created successfully');
 
         Fluttertoast.showToast(
           msg: 'Post created successfully!',
@@ -183,8 +181,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
           MaterialPageRoute(builder: (context) => Feed()),
         );
       } else {
-        print(response.body);
-        print(response.statusCode);
         print('Failed to create post: ${response.body}');
       }
     } catch (e) {
@@ -206,10 +202,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: Text('Create a post'),
+        title: Text('Create post', style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
-            icon: Icon(Icons.save),
+            icon: Icon(Icons.save, color: Colors.white),
             onPressed: isButtonEnabled ? _createPost : null,
           ),
         ],
@@ -307,7 +303,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               isLocationLoading
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         CircularProgressIndicator(),
                         SizedBox(width: 8.0),
                         Text('Fetching Location...'),

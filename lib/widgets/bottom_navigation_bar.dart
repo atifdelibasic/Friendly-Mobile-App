@@ -24,7 +24,6 @@ class BottomNavBar extends StatelessWidget {
       Navigator.popAndPushNamed(context, "/nearby");
       break;
       case 3:
-      print("ideeeeees");
       Navigator.push(
                           context,
         MaterialPageRoute(

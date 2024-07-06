@@ -9,7 +9,7 @@ import '../domain/user.dart';
 import '../utility/time.dart'; // Import User class
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   _NotificationsScreenState createState() => _NotificationsScreenState();
@@ -58,10 +58,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications'),
+        title: Text('Notifications', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.deepPurple,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.white  ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -107,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             backgroundImage: NetworkImage(user.profileImage),
                           ),
                           title: Text(
-                            '${user.firstName} ${user.lastName} liked your post ' + calculateTimeAgo(dateCreated),
+                            '${user.firstName} ${user.lastName} liked your post ${calculateTimeAgo(dateCreated)}',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(user.email),

@@ -15,7 +15,7 @@ class CityService {
     var token = await UserPreferences().getToken();
 
 
-    if (searchText != null && searchText.isNotEmpty) {
+    if (searchText.isNotEmpty) {
       uri += '&text=$searchText';
     }
 

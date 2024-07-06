@@ -13,7 +13,6 @@ import '../domain/post.dart';
 import '../providers/user_provider.dart';
 import '../utility/app_url.dart';
 import '../widgets/bottom_navigation_bar.dart';
-import 'add_post_screen.dart';
 import 'feed.dart';
 
 class NearbyPostsFeed extends StatefulWidget {
@@ -225,7 +224,6 @@ void _hideLoadingIndicator(BuildContext context) {
 
     return Scaffold(
      appBar: AppBar(
-        // title: Text('Friendly'),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.deepPurple,
         leadingWidth: 45,
@@ -256,9 +254,11 @@ void _hideLoadingIndicator(BuildContext context) {
                   delegate: CustomSearchDelegate(),
                 );
               },
-              icon: const Icon(Icons.search)),
+          icon: const Icon(Icons.search, color: Colors.white)),
+
           // user profile
           PopupMenuButton(
+             icon: Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: "logout",

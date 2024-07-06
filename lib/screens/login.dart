@@ -176,6 +176,7 @@ class _LoginState extends State<Login> {
                           : Text(
                               'Log In',
                               style: GoogleFonts.montserrat(
+                                color: Colors.white,
                                   fontSize: 16, fontWeight: FontWeight.w500),
                             ),
                     ),

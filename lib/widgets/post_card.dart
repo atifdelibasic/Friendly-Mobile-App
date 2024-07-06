@@ -201,7 +201,7 @@ class _PostCardState extends State<PostCard> {
 
       return menuItems;
     },
-    icon: Icon(Icons.more_vert),
+    icon: Icon(Icons.more_vert,),
   ),
 ),
 
@@ -271,7 +271,7 @@ class _PostCardState extends State<PostCard> {
                       // Handle like post
                       final Map<String, dynamic> apiBodyData = {
                         "postId": widget.post.id };
-                      var response = await post(
+                     await post(
                       Uri.parse(AppUrl.likePost),
                       body: json.encode(apiBodyData),
                       headers: {

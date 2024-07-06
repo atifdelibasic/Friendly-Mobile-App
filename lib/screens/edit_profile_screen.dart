@@ -8,7 +8,6 @@ import 'package:friendly_mobile_app/utility/shared_preference.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../domain/city.dart';
 import '../domain/country.dart';
 import '../domain/country_response.dart';
@@ -129,8 +128,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         count = response.count;
 
         _selectedCountryId = widget.user.countryId;
-        print("ev ti city id");
-        print(widget.user.cityId);
         fetchCities();
         _selectedCityId = widget.user.cityId;
 
@@ -230,7 +227,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String? imagePath = responseBody['profileImageUrl'];
-        widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name='+ widget.user.firstName + '+'+ widget.user.lastName+'&size=300';
+        widget.user.profileImage = imagePath != null && imagePath != "" ? "${AppUrl.baseUrl}/images/$imagePath" : 'https://ui-avatars.com/api/?rounded=true&name=${widget.user.firstName}+${widget.user.lastName}&size=300';
 
 
         Provider.of<UserProvider>(context, listen: false).setUser(widget.user);
@@ -279,13 +276,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _removeImage() {
-    setState(() {
-      imageUrl = "";
-      widget.user.profileImage = 'https://ui-avatars.com/api/?rounded=true&name='+ widget.user.firstName + '+'+ widget.user.lastName+'&size=300';
-    });
-  }
-
   void _onHobbySelected(int hobbyId) {
     setState(() {
       if (_selectedHobbies.contains(hobbyId)) {
@@ -300,7 +290,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        title: Text('Edit Profile', style: TextStyle(color: Colors.white)),
+         leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         backgroundColor: Colors.teal,
       ),
       body: SingleChildScrollView(
@@ -347,7 +343,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             SizedBox(height: 10),
-               Center(child:  Text("Tap to upload an image")),
+               Center(child:  Text("Tap to upload image")),
             SizedBox(height: 20),
             Card(
               elevation: 4,
@@ -605,48 +601,78 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Recommended Hobbies:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: recommendedHobbies.map((hobby) {
-                        return GestureDetector(
-                          onTap: () {
-                            _onHobbySelected(hobby.id);
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Recommended Hobbies', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            IconButton(
+              icon: Icon(Icons.info_outline),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Information'),
+                      content: Text('The code implements a recommender system using matrix factorization with Microsoft ML.NET. The recommender system aims to predict hobbies that a user might be interested in based on their interactions with hobbies categorized by different categories.'),
+                      actions: [
+                        TextButton(
+                          child: Text('Close'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
                           },
-                          child: Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(hobby.title, style: TextStyle(fontSize: 16)),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+
+        SizedBox(height: 5),
+         Text('Tap on info icon for more information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.red)),
+        SizedBox(height: 5),
+            recommendedHobbies.isEmpty ? Text("No hobbies to recommend") : Container(),
+
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: recommendedHobbies.map((hobby) {
+            return GestureDetector(
+              onTap: () {
+                _onHobbySelected(hobby.id);
+              },
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(hobby.title, style: TextStyle(fontSize: 16)),
                 ),
               ),
-            ),
+            );
+          }).toList(),
+        ),
+      ],
+    ),)),
             SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: _updateProfile,
-                child: Text('Update Profile'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.teal,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   textStyle: TextStyle(fontSize: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                child: Text('Update Profile'),
               ),
             ),
           ],

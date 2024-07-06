@@ -127,7 +127,6 @@ Future<void> fetch() async {
             setState(() {
           isLoading = false;
           if (items.length < limit) {
-            print("length");
             hasMore = false;
           } else {
             hasMore = true;
@@ -137,7 +136,6 @@ Future<void> fetch() async {
 
         });
        } else {
-        print("response " + response.statusCode.toString());
         throw Exception('Failed to load data');
       }
 }
@@ -191,9 +189,9 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       backgroundColor: Colors.deepPurple,
-  title: Text('User Profile'),
+  title: Text('User Profile', style:  TextStyle(color: Colors.white),),
   leading: IconButton(
-    icon: Icon(Icons.arrow_back),
+    icon: Icon(Icons.arrow_back, color: Colors.white,),
     onPressed: () {
       Navigator.pop(context);
     },
@@ -201,7 +199,7 @@ Widget build(BuildContext context) {
   actions: <Widget>[
     if (user?.id == widget.user.id) // Replace "condition" with your actual condition
       IconButton(
-        icon: Icon(Icons.edit),
+        icon: Icon(Icons.edit, color: Colors.white,),
         onPressed: _navigateToEditProfile,
       ),
    
@@ -307,9 +305,9 @@ Widget build(BuildContext context) {
                           },
                           child:Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: [
+                            children: const [
                               Icon(Icons.chat_rounded),
-                              SizedBox(width: 8), // Add some space between the icon and the text
+                              SizedBox(width: 8), 
                               Text('Start Chat'),
                             ],
                           ),
@@ -441,8 +439,8 @@ void sendFriendRequest() async {
 
    final Map<String, dynamic> body = {"id":widget.user.id};
 
-  final response = await http.post(
-      Uri.parse(AppUrl.baseUrl + "/profiles/${widget.user.id}/friend-requests"),
+  await http.post(
+      Uri.parse("${AppUrl.baseUrl}/profiles/${widget.user.id}/friend-requests"),
       headers: headers,
       body: jsonEncode(body),
     );
@@ -459,14 +457,12 @@ void cancelFriendRequest() async{
 
    final Map<String, dynamic> body = {};
 
-  final response = await http.put(
+   await http.put(
       Uri.parse("${AppUrl.baseUrl}/friend-request/$id/decline"),
       headers: headers,
       body: jsonEncode(body),
     );
      fetchFriendRequestStatus();
-
-
 }
 
 void acceptFriendRequest() async{
@@ -479,7 +475,7 @@ void acceptFriendRequest() async{
 
    final Map<String, dynamic> body = {};
 
-  final response = await http.put(
+  await http.put(
       Uri.parse(AppUrl.baseUrl + "/friend-request/$id/accept"),
       headers: headers,
       body: jsonEncode(body),

@@ -14,7 +14,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: selectedIndex,
       onTap: onTabSelected,
-      items: [
+      items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',

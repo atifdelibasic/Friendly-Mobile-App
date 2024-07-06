@@ -15,7 +15,6 @@ import '../domain/user.dart';
 import '../feedback_dialog.dart';
 import '../providers/user_provider.dart';
 import '../utility/app_url.dart';
-import 'add_post_screen.dart';
 import 'placeholders.dart';
 
 class Feed extends StatefulWidget {
@@ -105,7 +104,6 @@ class _FeedState extends State<Feed> {
   }
 
   void _showFeedbackDialog(BuildContext context) {
-    print("modal");
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -115,7 +113,6 @@ class _FeedState extends State<Feed> {
   }
 
   void _showRateAppDialog(BuildContext context) {
-    print("modal");
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -127,8 +124,6 @@ class _FeedState extends State<Feed> {
   @override
   Widget build(BuildContext context) {
     var user1 = Provider.of<UserProvider>(context, listen: true).user;
-    print( user1!.profileImage.toString());
-
     return Scaffold(
       appBar: AppBar(
         // title: Text('Friendly'),
@@ -140,7 +135,7 @@ class _FeedState extends State<Feed> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => UserProfilePage(user: user1)),
+                  builder: (context) => UserProfilePage(user: user1!)),
             );
           },
           child: SizedBox(
@@ -149,13 +144,13 @@ class _FeedState extends State<Feed> {
             child: Padding(
               padding: EdgeInsets.only(left: 10.0), // Add padding to the left
               child: CircleAvatar(
-                backgroundImage: NetworkImage(user1.profileImage),
+                backgroundImage: NetworkImage(user1!.profileImage),
               ),
             ),
           ),
         ),
         actions: [
-          IconButton(icon: const Icon( Icons.notifications), onPressed: () {
+          IconButton(icon: const Icon( Icons.notifications, color: Colors.white,), onPressed: () {
              Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -170,7 +165,7 @@ class _FeedState extends State<Feed> {
                   delegate: CustomSearchDelegate(),
                 );
               },
-              icon: const Icon(Icons.search)),
+              icon: const Icon(Icons.search, color: Colors.white)),
           PopupMenuButton(
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(

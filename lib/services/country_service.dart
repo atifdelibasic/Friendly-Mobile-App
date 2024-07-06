@@ -15,15 +15,13 @@ class CountryService {
 
     var token = await UserPreferences().getToken();
 
-    if (searchText != null && searchText.isNotEmpty) {
+    if (searchText.isNotEmpty) {
       uri += '&text=$searchText';
     }
 
     final response = await http.get(Uri.parse(uri),  headers: {
         'Authorization': 'Bearer $token',
       },);
-
-      print(response.statusCode);
 
     if (response.statusCode == 200) {
 
@@ -35,7 +33,6 @@ class CountryService {
 
       return CountryResponse(countries: countries, count: count);
     } else {
-      print("error");
       throw Exception('Failed to load countries');
     }
   }

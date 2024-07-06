@@ -2,10 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/utility/shared_preference.dart';
-import 'package:provider/provider.dart';
 import '../domain/message.dart';
-import '../domain/user.dart';
-import '../providers/user_provider.dart';
 import '../services/signalr_service.dart';
 import '../utility/app_url.dart';
 import 'package:http/http.dart' as http;

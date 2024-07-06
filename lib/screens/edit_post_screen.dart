@@ -32,7 +32,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       String token = await UserPreferences().getToken();
 
       final response = await http.put(
-        Uri.parse('${AppUrl.baseUrl}/Post/' + widget.postId.toString()),
+        Uri.parse('${AppUrl.baseUrl}/Post/${widget.postId}'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer ' + token,
@@ -88,7 +88,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               maxLines: 4,
             ),
             SizedBox(height: 16.0),
-            if (widget.imagePath != null && widget.imagePath.isNotEmpty)
+            if (widget.imagePath.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
                 child: Image.network(

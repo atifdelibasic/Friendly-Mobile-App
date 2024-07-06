@@ -32,7 +32,7 @@ class _RateAppDialogState extends State<RateAppDialog> {
      'rating' : _rating
   };
 
-  var response = await http.post(
+  await http.post(
     Uri.parse(url),
     headers: headers,
     body: body.isNotEmpty ? jsonEncode(body) : null,
@@ -100,7 +100,6 @@ class _RateAppDialogState extends State<RateAppDialog> {
           child: ElevatedButton(
             onPressed: _isSubmitting || _rating == 0 ? null : () => _submitRating(context),
             style: ElevatedButton.styleFrom(
-              primary: Colors.amber, // Background color
               shape: CircleBorder(), // Circular shape
               elevation: 3, // Elevation
             ),

@@ -90,7 +90,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 SizedBox(
-                  height: 75,
+                  height: 55,
                 ),
                 Text(
                   'Hello Again!',
@@ -109,7 +109,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 SizedBox(
-                  height: 50,
+                  height: 40,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -162,7 +162,7 @@ class _LoginState extends State<Login> {
                     onPressed: _isSubmitting ? null : doLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
-                      padding: EdgeInsets.all(20),
+                      padding: EdgeInsets.all(15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -176,8 +176,9 @@ class _LoginState extends State<Login> {
                           : Text(
                               'Log In',
                               style: GoogleFonts.montserrat(
-                                color: Colors.white,
-                                  fontSize: 16, fontWeight: FontWeight.w500),
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
                             ),
                     ),
                   ),

@@ -165,6 +165,7 @@ class _FeedState extends State<Feed> {
           ),
         ),
         actions: [
+         
           IconButton(icon: const Icon( Icons.notifications, color: Colors.white,), onPressed: () {
              Navigator.push(
                             context,

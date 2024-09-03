@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_mobile_app/providers/auth_provider.dart';
 import 'package:friendly_mobile_app/providers/user_provider.dart';
+import 'package:friendly_mobile_app/screens/fit_passport.dart';
 import 'package:friendly_mobile_app/screens/nearby_posts_feed.dart';
 import 'package:friendly_mobile_app/screens/requests.dart';
 import 'domain/user.dart';
@@ -46,9 +47,7 @@ class MyApp extends StatelessWidget {
                   else if (snapshot.data?.token == "")
                     return Login();
                   else
-
-                    // Provider.of<UserProvider>(context).setUser(snapshot.data);
-                    return Feed();
+                    return FitScreen();
 
               }
             }),
